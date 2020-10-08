@@ -1,0 +1,21 @@
+[package]
+name = "pvgql"
+version = "0.1.0"
+authors = ["zyddnys <zyddnys@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = { version = "*", features = ["serde"] }
+bson = "*"
+actix-web = "*"
+actix-rt = "*"
+actix-cors="*"
+env_logger = "*"
+serde = { version = "1.0.115", features = ["derive"] }
+serde_json = "*"
+serde_derive = "*"
+juniper = "0.14.2"
+reqwest = { version = "0.10.7", features = ["blocking", "json"] }
+extend = "*"
