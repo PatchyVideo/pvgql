@@ -71,3 +71,19 @@ async fn main() -> io::Result<()> {
 	.run()
 	.await
 }
+
+#[cfg(test)]
+mod test {
+	use std::convert::{TryFrom, TryInto};
+	#[test]
+	pub fn test_datetime() {
+		// let val = serde_json::json!({
+		// 	"created_at": {
+		// 		"$date": { "$numberLong": 1602266939024i64 }
+		// 	}
+		// });
+		// let obj2 = bson::Bson::try_from(val).unwrap();
+		let json_date = serde_json::json!({ "$date": { "$numberLong": "1590972160292" } });
+		let bson_date: bson::Bson = json_date.try_into().unwrap();
+	}
+}

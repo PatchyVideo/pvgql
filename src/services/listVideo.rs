@@ -10,8 +10,8 @@ use crate::common::*;
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
-
-use crate::models::{Meta, Error, RestResult};
+use std::convert::{TryFrom, TryInto};
+use crate::models::{Meta, Error, RestResult, BsonDateTime};
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="listVideo required parameters")]
@@ -22,6 +22,8 @@ pub struct ListVideoParameters {
     pub page_size: i32,
     /// Query
     pub query: Option<String>,
+    /// Query type, one of tag, text
+    pub qtype: Option<String>,
     /// List order, one of 'latest', 'oldest', 'video_latest', 'video_oldest'
     pub order: Option<String>,
     // Addtional query constraints
@@ -33,7 +35,6 @@ pub struct ListVideoParameters {
     /// Add tags_readable field to every result item
     pub human_readable_tag: Option<bool>
 }
-
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct VideoItem {
@@ -48,7 +49,7 @@ pub struct VideoItem {
     pub site: String,
     pub thumbnail_url: String,
     pub unique_id: String,
-    //pub upload_time: bson::DateTime,
+    pub upload_time: BsonDateTime,
     pub url: String,
     pub user_space_urls: Option<Vec<String>>,
     pub utags: Vec<String>,
@@ -91,9 +92,9 @@ impl VideoItem {
     pub fn unique_id(&self) -> &String {
         &self.unique_id
     }
-    // pub fn upload_time(&self) -> &DateTime<chrono::Utc> {
-    //     &self.upload_time
-    // }
+    pub fn upload_time(&self) -> DateTime<chrono::Utc> {
+        self.upload_time.to_UtcDateTime()
+    }
     pub fn url(&self) -> &String {
         &self.url
     }
@@ -110,6 +111,7 @@ impl VideoItem {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Video {
+    pub _id: ObjectId,
     pub clearence: i32,
     pub item: VideoItem,
     pub meta: Meta,
@@ -121,6 +123,9 @@ pub struct Video {
 #[juniper::object]
 #[graphql(description="Video Item")]
 impl Video {
+    pub fn id(&self) -> String {
+        self._id.to_string()
+    }
     pub fn clearence(&self) -> &i32 {
         &self.clearence
     }
@@ -164,7 +169,7 @@ impl ListVideoResult {
 
 
 pub fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
-    let result = postJSON!(ListVideoResult, format!("https://thvideo.tv/be/listvideo.do"), para);
+    let result = postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para);
     if result.status == "SUCCEED" {
         Ok(result.data.unwrap())
     } else {

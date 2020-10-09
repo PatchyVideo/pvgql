@@ -8,14 +8,14 @@ edition = "2018"
 
 [dependencies]
 chrono = { version = "*", features = ["serde"] }
-bson = "*"
+bson = "1.1.0"
 actix-web = "*"
 actix-rt = "*"
 actix-cors="*"
 env_logger = "*"
-serde = { version = "1.0.115", features = ["derive"] }
-serde_json = "*"
-serde_derive = "*"
+serde = { version = "1.0.58", features = ["derive"] }
+serde_json = "1.0.58"
+serde_derive = "1.0.58"
 juniper = {version = "0.14.2", features = ["chrono"] }
 reqwest = { version = "0.10.7", features = ["blocking", "json"] }
 extend = "*"
