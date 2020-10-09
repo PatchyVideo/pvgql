@@ -8,8 +8,10 @@ use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 
-#[macro_use]
+
 mod models;
+
+#[macro_use]
 mod common;
 mod gql;
 mod services;

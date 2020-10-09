@@ -33,10 +33,8 @@ impl QueryRoot {
 	// ------------------------------------------------
 	//     listVideo
 	// ------------------------------------------------
-    pub fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<String> {
-		Ok("aaa".into())
-
-		//juniper::FieldError::new(e)
+    pub fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
+		listVideo::listVideo_impl(para)
     }
 }
 

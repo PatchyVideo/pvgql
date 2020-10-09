@@ -16,6 +16,6 @@ env_logger = "*"
 serde = { version = "1.0.115", features = ["derive"] }
 serde_json = "*"
 serde_derive = "*"
-juniper = "0.14.2"
+juniper = {version = "0.14.2", features = ["chrono"] }
 reqwest = { version = "0.10.7", features = ["blocking", "json"] }
 extend = "*"
