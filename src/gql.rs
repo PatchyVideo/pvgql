@@ -34,17 +34,8 @@ impl QueryRoot {
 	//     listVideo
 	// ------------------------------------------------
     pub fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<String> {
-		//Ok("aaa".into())
-		let e = Error {
-			code: "UNKNOWN".into(),
-			aux: Some("nmsl".into())
-		};
-		Err(juniper::FieldError::new(
-			e.code,
-			graphql_value!({
-				e.aux
-			}),
-		))
+		Ok("aaa".into())
+
 		//juniper::FieldError::new(e)
     }
 }
