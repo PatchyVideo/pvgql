@@ -165,28 +165,6 @@ impl ListVideoResult {
 
 pub fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
     let result = postJSON!(ListVideoResult, format!("https://thvideo.tv/be/listvideo.do"), para);
-    // let result = {
-    //     let client = reqwest::blocking::Client::new();
-    //     let response = client.post(&format!("https://thvideo.tv/be/listvideo.do")).json(&para).send()?;
-    //     if response.status().is_success() {
-    //         println!("resp body: {:?}", response);
-    //         let resp_str = response.text().unwrap();
-    //         println!("body: {}", resp_str);
-    //         let obj : RestResult::<ListVideoResult> = serde_json::from_str(resp_str.as_str())?; //response.json()?;
-    //         Ok(obj)
-    //     } else {
-    //         let e: Error = response.json()?;
-    //         Err(
-    //             juniper::FieldError::new(
-    //                 e.code,
-    //                 graphql_value!({
-    //                     e.aux
-    //                 }),
-    //             )
-    //         )
-    //     }
-    // }?;
-    println!("result.status: {}", result.status);
     if result.status == "SUCCEED" {
         Ok(result.data.unwrap())
     } else {
