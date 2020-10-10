@@ -214,12 +214,53 @@ pub struct PlaylistMeta {
 	pub views: i32
 }
 
+#[juniper::graphql_object]
+#[graphql(description="PlaylistMeta")]
+impl PlaylistMeta {
+	pub fn cover(&self) -> &String {
+		&self.cover
+	}
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PlaylistContentForVideo {
 	pub _id: ObjectId,
 	pub item: PlaylistMeta,
 	pub next: Option<String>,
 	pub prev: Option<String>
+}
+
+#[juniper::graphql_object]
+#[graphql(description="Playlist Content Generated From Query of a single video")]
+impl PlaylistContentForVideo {
+	pub fn id(&self) -> String {
+		self._id.to_string()
+	}
+	pub fn item(&self) -> &PlaylistMeta {
+		&self.item
+	}
+	pub async fn next(&self, lang: String) -> FieldResult<Option<Video>> {
+		Ok(if let Some(vid) = &self.next {
+			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+				lang: lang,
+				vid: vid.to_string()
+			}).await?;
+			Some(vidobj)
+		} else {
+			None
+		})
+	}
+	pub async fn prev(&self, lang: String) -> FieldResult<Option<Video>> {
+		Ok(if let Some(vid) = &self.prev {
+			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+				lang: lang,
+				vid: vid.to_string()
+			}).await?;
+			Some(vidobj)
+		} else {
+			None
+		})
+	}
 }
 
 // impl Video {
@@ -231,7 +272,7 @@ pub struct PlaylistContentForVideo {
 use crate::services::getVideo;
 
 #[juniper::graphql_object]
-#[graphql(description="Video Item")]
+#[graphql(description="Video")]
 impl Video {
 	pub fn id(&self) -> String {
 		self._id.to_string()
@@ -267,10 +308,26 @@ impl Video {
 			Ok(vidobj.tag_by_category.unwrap())
 		}
 	}
-	// pub fn copies(&self) -> &Vec<Video> {
-	//     //
-	// }
-	// pub fn series(&self) -> &Vec<PlaylistContentForVideo> {
-	//     &self.series
-	// }
+	pub async fn copies(&self, lang: String) -> FieldResult<Vec<Video>> {
+	    if let Some(copies) = self.copies.clone() {
+			Ok(copies)
+		} else {
+			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+				lang: lang,
+				vid: self._id.to_string()
+			}).await?;
+			Ok(vidobj.copies.unwrap())
+		}
+	}
+	pub async fn playlists(&self, lang: String) -> FieldResult<Vec<PlaylistContentForVideo>> {
+	    if let Some(playlists) = self.playlists.clone() {
+			Ok(playlists)
+		} else {
+			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+				lang: lang,
+				vid: self._id.to_string()
+			}).await?;
+			Ok(vidobj.playlists.unwrap())
+		}
+	}
 }
