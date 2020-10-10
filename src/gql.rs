@@ -2,6 +2,7 @@ use juniper::FieldResult;
 use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
+use crate::models;
 use crate::models::Error;
 use juniper::graphql_value;
 #[derive(Clone)]
@@ -24,7 +25,7 @@ impl juniper::Context for Context {}
 // mod user_manager;
 // use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
 
-use crate::services::listVideo;
+use crate::services::{listVideo, getVideo};
 
 pub struct QueryRoot;
 
@@ -39,6 +40,12 @@ impl QueryRoot {
 	// ------------------------------------------------
     pub async fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
 		listVideo::listVideo_impl(para).await
+    }
+	// ------------------------------------------------
+	//     getVideo
+	// ------------------------------------------------
+    pub async fn getVideo(para: getVideo::GetVideoParameters) -> FieldResult<models::Video> {
+		getVideo::getVideo_impl(para).await
     }
 }
 
