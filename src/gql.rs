@@ -38,15 +38,15 @@ impl QueryRoot {
 	// ------------------------------------------------
 	//     listVideo
 	// ------------------------------------------------
-    pub async fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
+	pub async fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
 		listVideo::listVideo_impl(para).await
-    }
+	}
 	// ------------------------------------------------
 	//     getVideo
 	// ------------------------------------------------
-    pub async fn getVideo(para: getVideo::GetVideoParameters) -> FieldResult<models::Video> {
+	pub async fn getVideo(para: getVideo::GetVideoParameters) -> FieldResult<models::Video> {
 		getVideo::getVideo_impl(para).await
-    }
+	}
 }
 
 

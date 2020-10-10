@@ -2,11 +2,11 @@
 extern crate serde_json;
 
 use juniper::{
-    execute,
-    parser::{ParseError, ScalarToken, Spanning, Token},
-    serde::de,
-    EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
-    Value, Variables,
+	execute,
+	parser::{ParseError, ScalarToken, Spanning, Token},
+	serde::de,
+	EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
+	Value, Variables,
 };
 use std::fmt;
 
@@ -309,7 +309,7 @@ impl Video {
 		}
 	}
 	pub async fn copies(&self, lang: String) -> FieldResult<Vec<Video>> {
-	    if let Some(copies) = self.copies.clone() {
+		if let Some(copies) = self.copies.clone() {
 			Ok(copies)
 		} else {
 			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
@@ -320,7 +320,7 @@ impl Video {
 		}
 	}
 	pub async fn playlists(&self, lang: String) -> FieldResult<Vec<PlaylistContentForVideo>> {
-	    if let Some(playlists) = self.playlists.clone() {
+		if let Some(playlists) = self.playlists.clone() {
 			Ok(playlists)
 		} else {
 			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {

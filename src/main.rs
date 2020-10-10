@@ -11,7 +11,7 @@ use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
 use juniper::http::graphiql::graphiql_source;
 use juniper::http::GraphQLRequest;
 use juniper_actix::{
-    graphiql_handler as gqli_handler, graphql_handler, playground_handler as play_handler,
+	graphiql_handler as gqli_handler, graphql_handler, playground_handler as play_handler,
 };
 
 mod models;
@@ -35,45 +35,45 @@ async fn graphiql() -> HttpResponse {
 }
 
 async fn graphiql_handler() -> Result<HttpResponse, Error> {
-    gqli_handler("/", None).await
+	gqli_handler("/", None).await
 }
 async fn playground_handler() -> Result<HttpResponse, Error> {
-    play_handler("/", None).await
+	play_handler("/", None).await
 }
 async fn graphql(
-    req: actix_web::HttpRequest,
-    payload: actix_web::web::Payload,
-    schema: web::Data<Schema>,
+	req: actix_web::HttpRequest,
+	payload: actix_web::web::Payload,
+	schema: web::Data<Schema>,
 ) -> Result<HttpResponse, Error> {
-    graphql_handler(&schema, &(), req, payload).await
+	graphql_handler(&schema, &(), req, payload).await
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    //env::set_var("RUST_LOG", "info");
-    //env_logger::init();
+	//env::set_var("RUST_LOG", "info");
+	//env_logger::init();
 
-    let server = HttpServer::new(move || {
-        App::new()
-            .data(create_schema())
-            .wrap(middleware::Compress::default())
-            .wrap(middleware::Logger::default())
-            .wrap(
-                Cors::new()
-                    .allowed_methods(vec!["POST", "GET"])
-                    .supports_credentials()
-                    .max_age(3600)
-                    .finish(),
-            )
-            .service(
-                web::resource("/")
-                    .route(web::post().to(graphql))
-                    .route(web::get().to(graphql)),
-            )
-            .service(web::resource("/playground").route(web::get().to(playground_handler)))
-            .service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
-    });
-    server.bind("127.0.0.1:8080").unwrap().run().await
+	let server = HttpServer::new(move || {
+		App::new()
+			.data(create_schema())
+			.wrap(middleware::Compress::default())
+			.wrap(middleware::Logger::default())
+			.wrap(
+				Cors::new()
+					.allowed_methods(vec!["POST", "GET"])
+					.supports_credentials()
+					.max_age(3600)
+					.finish(),
+			)
+			.service(
+				web::resource("/")
+					.route(web::post().to(graphql))
+					.route(web::get().to(graphql)),
+			)
+			.service(web::resource("/playground").route(web::get().to(playground_handler)))
+			.service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
+	});
+	server.bind("127.0.0.1:8080").unwrap().run().await
 }
 
 // async fn graphql(
