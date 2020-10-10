@@ -11,7 +11,7 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
-use crate::models::{Meta, Error, RestResult, BsonDateTime};
+use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="listVideo required parameters")]
@@ -37,124 +37,14 @@ pub struct ListVideoParameters {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct VideoItem {
-    pub cover_image: String,
-    pub title: String,
-    pub desc: String,
-    pub placeholder: bool,
-    pub rating: f64,
-    pub repost_type: String,
-    pub copies: Vec<ObjectId>,
-    pub series: Vec<ObjectId>,
-    pub site: String,
-    pub thumbnail_url: String,
-    pub unique_id: String,
-    pub upload_time: BsonDateTime,
-    pub url: String,
-    pub user_space_urls: Option<Vec<String>>,
-    pub utags: Vec<String>,
-    pub views: i32
-}
-
-#[juniper::object]
-#[graphql(description="Video Item")]
-impl VideoItem {
-    pub fn cover_image(&self) -> &String {
-        &self.cover_image
-    }
-    pub fn title(&self) -> &String {
-        &self.title
-    }
-    pub fn desc(&self) -> &String {
-        &self.desc
-    }
-    pub fn placeholder(&self) -> &bool {
-        &self.placeholder
-    }
-    pub fn rating(&self) -> &f64 {
-        &self.rating
-    }
-    pub fn repost_type(&self) -> &String {
-        &self.repost_type
-    }
-    // pub fn copies(&self) -> &Vec<Video> {
-    //     //
-    // }
-    // pub fn series(&self) -> &Vec<ObjectId> {
-    //     &self.series
-    // }
-    pub fn site(&self) -> &String {
-        &self.site
-    }
-    pub fn thumbnail_url(&self) -> &String {
-        &self.thumbnail_url
-    }
-    pub fn unique_id(&self) -> &String {
-        &self.unique_id
-    }
-    pub fn upload_time(&self) -> DateTime<chrono::Utc> {
-        self.upload_time.to_UtcDateTime()
-    }
-    pub fn url(&self) -> &String {
-        &self.url
-    }
-    pub fn user_space_urls(&self) -> &Option<Vec<String>> {
-        &self.user_space_urls
-    }
-    pub fn utags(&self) -> &Vec<String> {
-        &self.utags
-    }
-    pub fn views(&self) -> &i32 {
-        &self.views
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Video {
-    pub _id: ObjectId,
-    pub clearence: i32,
-    pub item: VideoItem,
-    pub meta: Meta,
-    pub tag_count: i32,
-    pub tags: Vec<i32>,
-    pub tags_readable: Option<Vec<String>>
-}
-
-#[juniper::object]
-#[graphql(description="Video Item")]
-impl Video {
-    pub fn id(&self) -> String {
-        self._id.to_string()
-    }
-    pub fn clearence(&self) -> &i32 {
-        &self.clearence
-    }
-    pub fn item(&self) -> &VideoItem {
-        &self.item
-    }
-    pub fn meta(&self) -> &Meta {
-        &self.meta
-    }
-    pub fn tag_count(&self) -> &i32 {
-        &self.tag_count
-    }
-    pub fn tags(&self) -> &Vec<i32> {
-        &self.tags
-    }
-    pub fn tags_readable(&self) -> &Option<Vec<String>> {
-        &self.tags_readable
-    }
-}
-
-#[derive(Clone, Serialize, Deserialize)]
 pub struct ListVideoResult {
     pub videos: Vec<Video>,
     pub count: i32,
     pub page_count: i32
 }
 
-#[juniper::object]
-#[graphql(description="List video result")]
+#[juniper::graphql_object]
+#[juniper::graphql(description="List video result")]
 impl ListVideoResult {
     pub fn videos(&self) -> &Vec<Video> {
         &self.videos
@@ -168,7 +58,7 @@ impl ListVideoResult {
 }
 
 
-pub fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
+pub async fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
     let result = postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para);
     if result.status == "SUCCEED" {
         Ok(result.data.unwrap())

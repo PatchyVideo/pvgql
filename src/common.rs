@@ -28,13 +28,13 @@ macro_rules! postRawJSON {
 macro_rules! postJSON {
     ($t:ident, $u:expr, $j:expr) => {
         {
-            let client = reqwest::blocking::Client::new();
-            let response = client.post(&$u).json(&$j).send()?;
+            let client = reqwest::Client::new();
+            let response = client.post(&$u).json(&$j).send().await?;
             if response.status().is_success() {
-                let obj : RestResult::<$t> = response.json()?;
+                let obj : RestResult::<$t> = response.json().await?;
                 Ok(obj)
             } else {
-                let e: Error = response.json()?;
+                let e: Error = response.json().await?;
                 Err(
                     juniper::FieldError::new(
                         e.code,

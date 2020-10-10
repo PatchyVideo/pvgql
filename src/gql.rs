@@ -28,20 +28,24 @@ use crate::services::listVideo;
 
 pub struct QueryRoot;
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl QueryRoot {
+	fn apiVersion() -> &str {
+		"1.0"
+	}
+
 	// ------------------------------------------------
 	//     listVideo
 	// ------------------------------------------------
-    pub fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
-		listVideo::listVideo_impl(para)
+    pub async fn listVideo(para: listVideo::ListVideoParameters) -> FieldResult<listVideo::ListVideoResult> {
+		listVideo::listVideo_impl(para).await
     }
 }
 
 
 pub struct MutationRoot;
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl MutationRoot {
 	
 	fn apiVersion() -> &str {
@@ -54,8 +58,24 @@ impl MutationRoot {
 
 }
 
-pub type Schema = RootNode<'static, QueryRoot, MutationRoot>;
+pub struct SubscriptionRoot;
+
+#[juniper::graphql_object]
+impl SubscriptionRoot {
+	
+	fn apiVersion() -> &str {
+		"1.0"
+	}
+
+	fn serverDate() -> DateTime<Utc> {
+		Utc::now()
+	}
+
+}
+
+
+pub type Schema = RootNode<'static, QueryRoot, MutationRoot, juniper::EmptySubscription>;
 
 pub fn create_schema() -> Schema {
-	Schema::new(QueryRoot {}, MutationRoot {})
+	Schema::new(QueryRoot {}, MutationRoot {}, juniper::EmptySubscription::new())
 }
