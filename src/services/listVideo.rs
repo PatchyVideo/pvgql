@@ -59,7 +59,11 @@ impl ListVideoResult {
 
 
 pub async fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
-	let result = postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para);
+	let result = if para.query.is_none() {
+		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/listvideo.do"), para)
+	} else {
+		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para)
+	};
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())
 	} else {
