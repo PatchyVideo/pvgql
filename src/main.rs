@@ -58,13 +58,6 @@ async fn main() -> std::io::Result<()> {
 			.data(create_schema())
 			.wrap(middleware::Compress::default())
 			.wrap(middleware::Logger::default())
-			.wrap(
-				Cors::new()
-					.allowed_methods(vec!["POST", "GET"])
-					.supports_credentials()
-					.max_age(3600)
-					.finish(),
-			)
 			.service(
 				web::resource("/")
 					.route(web::post().to(graphql))
@@ -120,19 +113,19 @@ async fn main() -> std::io::Result<()> {
 // 	.await
 // }
 
-#[cfg(test)]
-mod test {
-	use std::convert::{TryFrom, TryInto};
-	#[test]
-	pub fn test_datetime() {
-		// let val = serde_json::json!({
-		// 	"created_at": {
-		// 		"$date": { "$numberLong": 1602266939024i64 }
-		// 	}
-		// });
-		// let obj2 = bson::Bson::try_from(val).unwrap();
-		let json_date = serde_json::json!({ "$date": { "$numberLong": "1590972160292" } });
-		let bson_date: bson::Bson = json_date.try_into().unwrap();
-	}
-}
+// #[cfg(test)]
+// mod test {
+// 	use std::convert::{TryFrom, TryInto};
+// 	#[test]
+// 	pub fn test_datetime() {
+// 		// let val = serde_json::json!({
+// 		// 	"created_at": {
+// 		// 		"$date": { "$numberLong": 1602266939024i64 }
+// 		// 	}
+// 		// });
+// 		// let obj2 = bson::Bson::try_from(val).unwrap();
+// 		let json_date = serde_json::json!({ "$date": { "$numberLong": "1590972160292" } });
+// 		let bson_date: bson::Bson = json_date.try_into().unwrap();
+// 	}
+// }
 
