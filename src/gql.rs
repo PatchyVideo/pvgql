@@ -25,7 +25,7 @@ impl juniper::Context for Context {}
 // mod user_manager;
 // use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
 
-use crate::services::{listVideo, getVideo};
+use crate::services::{listVideo, getVideo, editTags, authorDB};
 
 pub struct QueryRoot;
 
@@ -46,6 +46,18 @@ impl QueryRoot {
 	// ------------------------------------------------
 	pub async fn getVideo(para: getVideo::GetVideoParameters) -> FieldResult<models::Video> {
 		getVideo::getVideo_impl(para).await
+	}
+	// ------------------------------------------------
+	//     editTags
+	// ------------------------------------------------
+	pub async fn getTagObjects(para: editTags::GetTagObjectsBatchParameters) -> FieldResult<Vec<models::RegularTagObject>> {
+		editTags::getTagObjectsBatch_impl(para).await
+	}
+	// ------------------------------------------------
+	//     authorDB
+	// ------------------------------------------------
+	pub async fn getAuthor(para: authorDB::GetAuthorParameters) -> FieldResult<models::Author> {
+		authorDB::getAuthor_impl(para).await
 	}
 }
 

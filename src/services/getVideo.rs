@@ -56,3 +56,26 @@ pub async fn getVideo_impl(para: GetVideoParameters) -> FieldResult<Video> {
 		)
 	}
 }
+
+#[test]
+fn untyped_example() -> Result<(), Box<dyn std::error::Error>> {
+	use serde_json;
+    // Some JSON input data as a &str. Maybe this comes from the user.
+    let data = r#"
+        {
+            "name": "",
+            "age": 43,
+            "phones": [
+                "+44 1234567",
+                "+44 2345678"
+            ]
+        }"#;
+
+    // Parse the string of data into serde_json::Value.
+    let v: serde_json::Value = serde_json::from_str(data)?;
+
+    // Access parts of the data by indexing with square brackets.
+    println!("Please call {} at the number {}", v["name"], v["phones"][0]);
+
+    Ok(())
+}

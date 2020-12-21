@@ -2,6 +2,8 @@
 extern crate serde_json;
 
 use juniper::{
+	graphql_interface,
+	GraphQLObject,
 	execute,
 	parser::{ParseError, ScalarToken, Spanning, Token},
 	serde::de,
@@ -29,7 +31,7 @@ pub struct RestResult<T> {
 	pub data: Option<T>
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Meta {
 	pub created_at: BsonDateTime,
 	pub created_by: ObjectId,
@@ -40,8 +42,8 @@ pub struct Meta {
 #[juniper::graphql_object]
 #[graphql(description="Meta")]
 impl Meta {
-	pub fn nmsl(&self) -> String {
-		"nmsl".into()
+	pub fn test(&self) -> String {
+		"test".into()
 	}
 }
 
@@ -76,7 +78,7 @@ impl Meta {
 //     pub tags_readable: Option<Vec<String>>
 // }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BsonDateTime
 {
 	#[serde(rename = "$date")]
@@ -182,20 +184,6 @@ impl VideoItem {
 	}
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Video {
-	pub _id: ObjectId,
-	pub clearence: i32,
-	pub item: VideoItem,
-	pub meta: Meta,
-	pub tag_count: i32,
-	pub tags: Vec<i64>,
-	pub tags_readable: Option<Vec<String>>,
-	pub tag_by_category: Option<Vec<TagCategoryItem>>,
-	pub copies: Option<Vec<Video>>,
-	pub playlists: Option<Vec<PlaylistContentForVideo>>
-}
-
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 #[graphql(description="TagCategoryItem")]
 pub struct TagCategoryItem {
@@ -269,11 +257,25 @@ impl PlaylistContentForVideo {
 // 	}
 // }
 
-use crate::services::getVideo;
+use crate::services::{authorDB, editTags, getVideo};
 
-#[juniper::graphql_object]
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Video {
+	pub _id: ObjectId,
+	pub clearence: i32,
+	pub item: VideoItem,
+	pub meta: Meta,
+	pub tag_count: i32,
+	pub tags: Vec<i64>,
+	pub tags_readable: Option<Vec<String>>,
+	pub tag_by_category: Option<Vec<TagCategoryItem>>,
+	pub copies: Option<Vec<Video>>,
+	pub playlists: Option<Vec<PlaylistContentForVideo>>
+}
+
+#[juniper::graphql_object(scalar = S)]
 #[graphql(description="Video")]
-impl Video {
+impl<S: ScalarValue> Video {
 	pub fn id(&self) -> String {
 		self._id.to_string()
 	}
@@ -289,7 +291,7 @@ impl Video {
 	pub fn tag_count(&self) -> &i32 {
 		&self.tag_count
 	}
-	pub fn tags(&self) -> Vec<i32> {
+	pub fn tag_ids(&self) -> Vec<i32> {
 		self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 	}
 	pub fn tags_readable(&self) -> &Option<Vec<String>> {
@@ -307,6 +309,39 @@ impl Video {
 
 			Ok(vidobj.tag_by_category.unwrap())
 		}
+	}
+	pub async fn tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+		}).await?;
+		let mut resp = vec![];
+		for tagobj in tagobjs {
+			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
+				Box::new(AuthorTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+						Ok(ret) => Some(ret),
+						Err(_) => None
+					}
+				})
+			} else {
+				Box::new(RegularTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count
+				})
+			};
+			resp.push(ret);
+		};
+		Ok(resp)
 	}
 	pub async fn copies(&self, lang: String) -> FieldResult<Vec<Video>> {
 		if let Some(copies) = self.copies.clone() {
@@ -329,5 +364,176 @@ impl Video {
 			}).await?;
 			Ok(vidobj.playlists.unwrap())
 		}
+	}
+}
+
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+#[graphql(description="MultilingualMapping")]
+pub struct MultilingualMapping {
+	pub lang: String,
+	pub value: String
+}
+
+#[derive(GraphQLObject, Clone, Serialize, Deserialize)]
+#[graphql(description="RegularTagObject", impl = DynTagObject<__S>)]
+pub struct RegularTagObject {
+	pub tagid: i32,
+	pub _id: ObjectId,
+	pub category: String,
+	pub count: i32,
+	pub languages: Vec<MultilingualMapping>,
+	pub alias: Vec<String>
+}
+
+#[derive(GraphQLObject, Clone, Serialize, Deserialize)]
+#[graphql(description="AuthorTagObject", impl = DynTagObject<__S>)]
+pub struct AuthorTagObject {
+	pub tagid: i32,
+	pub _id: ObjectId,
+	pub category: String,
+	pub count: i32,
+	pub languages: Vec<MultilingualMapping>,
+	pub alias: Vec<String>,
+	pub author: Option<Author>
+}
+
+#[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject])] // enumerating all implementers is mandatory 
+pub trait TagObject {
+	async fn id(&self) -> String;
+	async fn tagid(&self) -> i32;
+	async fn category(&self) -> &String;
+	async fn count(&self) -> i32;
+	async fn languages(&self) -> &Vec<MultilingualMapping>;
+	async fn alias(&self) -> &Vec<String>;
+	async fn is_author(&self) -> bool;
+}
+
+#[juniper::graphql_interface(dyn)]
+impl TagObject for RegularTagObject {
+	async fn id(&self) -> String {
+		self._id.to_string()
+	}
+	async fn tagid(&self) -> i32 {
+		self.tagid
+	}
+	async fn category(&self) -> &String {
+		&self.category
+	}
+	async fn count(&self) -> i32 {
+		self.count
+	}
+	async fn languages(&self) -> &Vec<MultilingualMapping> {
+		&self.languages
+	}
+	async fn alias(&self) -> &Vec<String> {
+		&self.alias
+	}
+	async fn is_author(&self) -> bool {
+		false
+	}
+}
+
+#[juniper::graphql_interface(dyn)]
+impl TagObject for AuthorTagObject {
+	async fn id(&self) -> String {
+		self._id.to_string()
+	}
+	async fn tagid(&self) -> i32 {
+		self.tagid
+	}
+	async fn category(&self) -> &String {
+		&self.category
+	}
+	async fn count(&self) -> i32 {
+		self.count
+	}
+	async fn languages(&self) -> &Vec<MultilingualMapping> {
+		&self.languages
+	}
+	async fn alias(&self) -> &Vec<String> {
+		&self.alias
+	}
+	async fn is_author(&self) -> bool {
+		true
+	}
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Author {
+	pub _id: ObjectId,
+	#[serde(rename = "type")]
+	pub type_: String,
+	#[serde(rename = "tagid")]
+	pub tagname: String,
+	pub common_tagids: Vec<i32>,
+	pub urls: Vec<String>,
+	pub user_space_ids: Vec<String>,
+	pub avatar: String,
+	pub desc: String
+}
+
+#[juniper::graphql_object(scalar = S)]
+#[graphql(description="Author")]
+impl<S: ScalarValue> Author {
+	pub async fn id(&self) -> String {
+		self._id.to_string()
+	}
+	#[graphql(
+        // overwrite the public name
+        name = "type"
+    )]
+	pub async fn type_(&self) -> &String {
+		&self.type_
+	}
+	pub async fn tagname(&self) -> &String {
+		&self.tagname
+	}
+	pub async fn common_tagids(&self) -> &Vec<i32> {
+		&self.common_tagids
+	}
+	pub async fn common_tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+			tagid: self.common_tagids.clone()
+		}).await?;
+		let mut resp = vec![];
+		for tagobj in tagobjs {
+			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
+				Box::new(AuthorTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+						Ok(ret) => Some(ret),
+						Err(_) => None
+					}
+				})
+			} else {
+				Box::new(RegularTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count
+				})
+			};
+			resp.push(ret);
+		};
+		Ok(resp)
+	}
+	pub async fn urls(&self) -> &Vec<String> {
+		&self.urls
+	}
+	pub async fn user_space_ids(&self) -> &Vec<String> {
+		&self.user_space_ids
+	}
+	pub async fn avatar(&self) -> &String {
+		&self.avatar
+	}
+	pub async fn desc(&self) -> &String {
+		&self.desc
 	}
 }
