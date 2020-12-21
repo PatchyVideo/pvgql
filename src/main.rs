@@ -35,10 +35,10 @@ async fn graphiql() -> HttpResponse {
 }
 
 async fn graphiql_handler() -> Result<HttpResponse, Error> {
-	gqli_handler("/graphql", None).await
+	gqli_handler("/", None).await
 }
 async fn playground_handler() -> Result<HttpResponse, Error> {
-	play_handler("/graphql", None).await
+	play_handler("/", None).await
 }
 async fn graphql(
 	req: actix_web::HttpRequest,
@@ -50,36 +50,23 @@ async fn graphql(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	// env::set_var("RUST_LOG", "actix=info");
-	// env_logger::init();
+	//env::set_var("RUST_LOG", "info");
+	//env_logger::init();
 
-	HttpServer::new(move || {
+	let server = HttpServer::new(move || {
 		App::new()
 			.data(create_schema())
-			.wrap(
-				Cors::default()
-					.allowed_origin("http://localhost:3000")
-					.allowed_origin("http://127.0.0.1:3000")
-					.allowed_origin("http://localhost:8080")
-					.allowed_origin("http://127.0.0.1:8080")
-					.allow_any_header()
-					.allow_any_method()
-					.supports_credentials()
-					.max_age(3600)
-			)
 			.wrap(middleware::Compress::default())
 			.wrap(middleware::Logger::default())
 			.service(
-				web::resource("/graphql")
+				web::resource("/")
 					.route(web::post().to(graphql))
 					.route(web::get().to(graphql)),
 			)
 			.service(web::resource("/playground").route(web::get().to(playground_handler)))
 			.service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
-	})
-		.bind(("127.0.0.1", 8080))?
-		.run()
-		.await
+	});
+	server.bind("127.0.0.1:8080").unwrap().run().await
 }
 
 // async fn graphql(
@@ -141,4 +128,3 @@ async fn main() -> std::io::Result<()> {
 // 		let bson_date: bson::Bson = json_date.try_into().unwrap();
 // 	}
 // }
-
