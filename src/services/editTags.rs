@@ -53,7 +53,8 @@ pub async fn getTagObjectsBatch_impl(para: GetTagObjectsBatchParameters) -> Fiel
 					};
 					langmap
 				},
-				count: tagobj.count as i32
+				count: tagobj.count as i32,
+				is_author: false
 			}
 		}).collect::<Vec<_>>())
 	} else {

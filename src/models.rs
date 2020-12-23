@@ -327,7 +327,8 @@ impl<S: ScalarValue> Video {
 					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
 						Ok(ret) => Some(ret),
 						Err(_) => None
-					}
+					},
+					is_author: true
 				})
 			} else {
 				Box::new(RegularTagObject {
@@ -336,7 +337,8 @@ impl<S: ScalarValue> Video {
 					alias: tagobj.alias.clone(),
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
-					count: tagobj.count
+					count: tagobj.count,
+					is_author: false
 				})
 			};
 			resp.push(ret);
@@ -382,7 +384,8 @@ pub struct RegularTagObject {
 	pub category: String,
 	pub count: i32,
 	pub languages: Vec<MultilingualMapping>,
-	pub alias: Vec<String>
+	pub alias: Vec<String>,
+	pub is_author: bool
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
@@ -394,7 +397,8 @@ pub struct AuthorTagObject {
 	pub count: i32,
 	pub languages: Vec<MultilingualMapping>,
 	pub alias: Vec<String>,
-	pub author: Option<Author>
+	pub author: Option<Author>,
+	pub is_author: bool
 }
 
 #[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject])] // enumerating all implementers is mandatory 
@@ -405,6 +409,7 @@ pub trait TagObject {
 	async fn count(&self) -> i32;
 	async fn languages(&self) -> &Vec<MultilingualMapping>;
 	async fn alias(&self) -> &Vec<String>;
+	async fn is_author(&self) -> bool;
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -427,6 +432,9 @@ impl TagObject for RegularTagObject {
 	async fn alias(&self) -> &Vec<String> {
 		&self.alias
 	}
+	async fn is_author(&self) -> bool {
+		false
+	}
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -448,6 +456,9 @@ impl TagObject for AuthorTagObject {
 	}
 	async fn alias(&self) -> &Vec<String> {
 		&self.alias
+	}
+	async fn is_author(&self) -> bool {
+		true
 	}
 }
 
@@ -501,7 +512,8 @@ impl<S: ScalarValue> Author {
 					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
 						Ok(ret) => Some(ret),
 						Err(_) => None
-					}
+					},
+					is_author: true
 				})
 			} else {
 				Box::new(RegularTagObject {
@@ -510,7 +522,8 @@ impl<S: ScalarValue> Author {
 					alias: tagobj.alias.clone(),
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
-					count: tagobj.count
+					count: tagobj.count,
+					is_author: false
 				})
 			};
 			resp.push(ret);
