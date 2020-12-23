@@ -221,8 +221,8 @@ pub struct PlaylistContentForVideo {
 #[juniper::graphql_object]
 #[graphql(description="Playlist Content Generated From Query of a single video")]
 impl PlaylistContentForVideo {
-	pub fn id(&self) -> String {
-		self._id.to_string()
+	pub fn id(&self) -> ObjectId {
+		self._id.clone()
 	}
 	pub fn item(&self) -> &PlaylistMeta {
 		&self.item
@@ -276,8 +276,8 @@ pub struct Video {
 #[juniper::graphql_object(scalar = S)]
 #[graphql(description="Video")]
 impl<S: ScalarValue> Video {
-	pub fn id(&self) -> String {
-		self._id.to_string()
+	pub fn id(&self) -> ObjectId {
+		self._id.clone()
 	}
 	pub fn clearence(&self) -> &i32 {
 		&self.clearence
@@ -399,7 +399,7 @@ pub struct AuthorTagObject {
 
 #[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject])] // enumerating all implementers is mandatory 
 pub trait TagObject {
-	async fn id(&self) -> String;
+	async fn id(&self) -> ObjectId;
 	async fn tagid(&self) -> i32;
 	async fn category(&self) -> &String;
 	async fn count(&self) -> i32;
@@ -410,8 +410,8 @@ pub trait TagObject {
 
 #[juniper::graphql_interface(dyn)]
 impl TagObject for RegularTagObject {
-	async fn id(&self) -> String {
-		self._id.to_string()
+	async fn id(&self) -> ObjectId {
+		self._id.clone()
 	}
 	async fn tagid(&self) -> i32 {
 		self.tagid
@@ -435,8 +435,8 @@ impl TagObject for RegularTagObject {
 
 #[juniper::graphql_interface(dyn)]
 impl TagObject for AuthorTagObject {
-	async fn id(&self) -> String {
-		self._id.to_string()
+	async fn id(&self) -> ObjectId {
+		self._id.clone()
 	}
 	async fn tagid(&self) -> i32 {
 		self.tagid
@@ -475,8 +475,8 @@ pub struct Author {
 #[juniper::graphql_object(scalar = S)]
 #[graphql(description="Author")]
 impl<S: ScalarValue> Author {
-	pub async fn id(&self) -> String {
-		self._id.to_string()
+	pub async fn id(&self) -> ObjectId {
+		self._id.clone()
 	}
 	#[graphql(
         // overwrite the public name

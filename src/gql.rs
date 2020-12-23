@@ -27,10 +27,10 @@ impl juniper::Context for Context {}
 
 use crate::services::{listVideo, getVideo, editTags, authorDB};
 
-pub struct QueryRoot;
+pub struct Query;
 
 #[juniper::graphql_object]
-impl QueryRoot {
+impl Query {
 	fn apiVersion() -> &str {
 		"1.0"
 	}
@@ -62,10 +62,10 @@ impl QueryRoot {
 }
 
 
-pub struct MutationRoot;
+pub struct Mutation;
 
 #[juniper::graphql_object]
-impl MutationRoot {
+impl Mutation {
 	
 	fn apiVersion() -> &str {
 		"1.0"
@@ -77,10 +77,10 @@ impl MutationRoot {
 
 }
 
-pub struct SubscriptionRoot;
+pub struct Subscription;
 
 #[juniper::graphql_object]
-impl SubscriptionRoot {
+impl Subscription {
 	
 	fn apiVersion() -> &str {
 		"1.0"
@@ -93,8 +93,8 @@ impl SubscriptionRoot {
 }
 
 
-pub type Schema = RootNode<'static, QueryRoot, MutationRoot, juniper::EmptySubscription>;
+pub type Schema = RootNode<'static, Query, Mutation, juniper::EmptySubscription>;
 
 pub fn create_schema() -> Schema {
-	Schema::new(QueryRoot {}, MutationRoot {}, juniper::EmptySubscription::new())
+	Schema::new(Query {}, Mutation {}, juniper::EmptySubscription::new())
 }
