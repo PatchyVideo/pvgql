@@ -405,7 +405,6 @@ pub trait TagObject {
 	async fn count(&self) -> i32;
 	async fn languages(&self) -> &Vec<MultilingualMapping>;
 	async fn alias(&self) -> &Vec<String>;
-	async fn is_author(&self) -> bool;
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -428,9 +427,6 @@ impl TagObject for RegularTagObject {
 	async fn alias(&self) -> &Vec<String> {
 		&self.alias
 	}
-	async fn is_author(&self) -> bool {
-		false
-	}
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -452,9 +448,6 @@ impl TagObject for AuthorTagObject {
 	}
 	async fn alias(&self) -> &Vec<String> {
 		&self.alias
-	}
-	async fn is_author(&self) -> bool {
-		true
 	}
 }
 
