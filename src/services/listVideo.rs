@@ -17,9 +17,11 @@ use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
 #[graphql(description="listVideo required parameters")]
 pub struct ListVideoParameters {
 	/// Page Number (starts from 1)
-	pub page: i32,
+	#[serde(rename(serialize = "page"))]
+	pub offset: i32,
 	/// Num of item in a page
-	pub page_size: i32,
+	#[serde(rename(serialize = "page_size"))]
+	pub limit: i32,
 	/// Query
 	pub query: Option<String>,
 	/// Query type, one of tag, text
