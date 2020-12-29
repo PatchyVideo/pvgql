@@ -16,11 +16,9 @@ use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="listVideo required parameters")]
 pub struct ListVideoParameters {
-	/// Page Number (starts from 1)
-	#[serde(rename(serialize = "page"))]
+	/// Offset (start from 0)
 	pub offset: i32,
 	/// Num of item in a page
-	#[serde(rename(serialize = "page_size"))]
 	pub limit: i32,
 	/// Query
 	pub query: Option<String>,

@@ -1,5 +1,5 @@
 # PVGQL
-This is a GraphQL wrapper around current PatyVideo's Python backend implemention.\
+This is a GraphQL wrapper around current PatchyVideo's Python backend implemention.\
 A complete rewrite of backend is not going to happen.
 # Usage
 1. Download and install rust
