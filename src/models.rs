@@ -70,38 +70,6 @@ impl User {
 
 use serde::de::IntoDeserializer;
 use serde::de::Deserializer;
-// use crate::models::_::_serde::Deserialize;
-
-// fn empty_oid_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
-// where
-//     D: serde::Deserializer<'de>,
-//     T: serde::Deserialize<'de>,
-// {
-//     let opt = Option::<String>::deserialize(de)?;
-//     let opt = opt.as_ref().map(String::as_str);
-//     match opt {
-//         None | Some("") => Ok(None),
-//         Some(s) => T::deserialize(s.into_deserializer()).map(Some)
-//     }
-// }
-
-fn non_empty_oid<'de, D: Deserializer<'de>>(d: D) -> Result<Option<ObjectId>, D::Error> {
-    use serde::Deserialize;
-	// let opt: Option<String> = match Option::deserialize(d) {
-	// 	Ok(a) => a,
-	// 	Err(_) => return Ok(None)
-	// };
-	let opt: Option<String> = Option::deserialize(d)?;
-	if let Some(s) = opt {
-		if s.len() > 0 {
-			ObjectId::deserialize(s.into_deserializer()).map(Some)
-		} else {
-			Ok(None)
-		}
-	} else {
-		Ok(None)
-	}
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -342,12 +310,13 @@ pub struct Playlist {
 	pub clearence: i32,
 	pub editable: Option<bool>,
 	pub owner: Option<bool>,
-	//pub videos: Vec<Video>
+	pub tags: Vec<i64>,
+	pub tag_by_category: Option<Vec<TagCategoryItem>>,
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(scalar = S)]
 #[graphql(description="Playlist")]
-impl Playlist {
+impl<S: ScalarValue> Playlist {
 	pub fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
@@ -377,6 +346,56 @@ impl Playlist {
 			pid: self._id.to_string()
 		}).await?;
 		Ok(videos)
+	}
+	pub fn tag_ids(&self) -> Vec<i32> {
+		self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+	}
+	pub async fn tag_by_category(&self, lang: Option<String>) -> FieldResult<Vec<TagCategoryItem>> {
+		if let Some(catemap) = self.tag_by_category.clone() {
+			Ok(catemap)
+		} else {
+			//self.fill_missing_fields();
+			let playlist_obj = playlist::getPlaylist_impl(playlist::GetPlaylistParameters {
+				pid: self._id.to_string()
+			}).await?;
+
+			Ok(playlist_obj.tag_by_category.unwrap())
+		}
+	}
+	pub async fn tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+		}).await?;
+		let mut resp = vec![];
+		for tagobj in tagobjs {
+			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
+				Box::new(AuthorTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+						Ok(ret) => Some(ret),
+						Err(_) => None
+					},
+					is_author: true
+				})
+			} else {
+				Box::new(RegularTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					is_author: false
+				})
+			};
+			resp.push(ret);
+		};
+		Ok(resp)
 	}
 }
 

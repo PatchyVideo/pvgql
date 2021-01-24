@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use juniper::FieldResult;
 
-use crate::{common::*, models::Playlist};
+use crate::{common::*, models::{Playlist, TagCategoryItem}};
 
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -26,7 +26,8 @@ pub struct ResultantPlaylist {
 pub struct GetPlaylistMetadataResult {
     pub editable: bool,
     pub owner: bool,
-    pub playlist: ResultantPlaylist
+    pub playlist: ResultantPlaylist,
+    pub tags: Vec<serde_json::Value>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -57,13 +58,28 @@ pub async fn getPlaylist_impl(para: GetPlaylistParameters) -> FieldResult<Playli
     let result = postJSON!(GetPlaylistMetadataResult, format!("https://thvideo.tv/be/lists/get_playlist_metadata.do"), para);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
+        let tag_by_cat = r.tags[2].as_object().ok_or(juniper::FieldError::new(
+            "NO_CATEGORY_TAG_MAP",
+            graphql_value!({
+                "INTERAL_ERROR": "NO_CATEGORY_TAG_MAP"
+            }),
+        ))?;
+        let mut catemap: Vec<TagCategoryItem> = vec![];
+		for (k, v) in tag_by_cat {
+			catemap.push(TagCategoryItem {
+				key: k.clone(),
+				value: v.as_array().unwrap().iter().map(|x: &serde_json::Value| x.as_str().unwrap().into()).collect::<Vec<_>>()
+			});
+		};
 		Ok(Playlist {
             _id: r.playlist._id,
             item: r.playlist.item,
             meta: r.playlist.meta,
             clearence: r.playlist.clearence,
             editable: Some(r.editable),
-            owner: Some(r.owner)
+            owner: Some(r.owner),
+            tags: r.playlist.tags,
+            tag_by_category: Some(catemap)
         })
 	} else {
 		Err(
@@ -126,7 +142,9 @@ impl ListPlaylistResult {
             meta: r.meta.clone(),
             clearence: r.clearence,
             editable: None,
-            owner: None
+            owner: None,
+            tags: r.tags.clone(),
+            tag_by_category: None
         }).collect::<Vec<_>>()
 	}
 	pub fn count(&self) -> &i32 {
