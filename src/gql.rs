@@ -25,7 +25,7 @@ impl juniper::Context for Context {}
 // mod user_manager;
 // use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
 
-use crate::services::{listVideo, getVideo, editTags, authorDB};
+use crate::services::{listVideo, getVideo, editTags, authorDB, playlist};
 
 pub struct Query;
 
@@ -58,6 +58,15 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getAuthor(para: authorDB::GetAuthorParameters) -> FieldResult<models::Author> {
 		authorDB::getAuthor_impl(para).await
+	}
+	// ------------------------------------------------
+	//     playlist
+	// ------------------------------------------------
+	pub async fn getPlaylist(para: playlist::GetPlaylistParameters) -> FieldResult<models::Playlist> {
+		playlist::getPlaylist_impl(para).await
+	}
+	pub async fn listPlaylist(para: playlist::ListPlaylistParameters) -> FieldResult<playlist::ListPlaylistResult> {
+		playlist::listPlatylist_impl(para).await
 	}
 }
 

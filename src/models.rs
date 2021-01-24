@@ -31,12 +31,44 @@ pub struct RestResult<T> {
 	pub data: Option<T>
 }
 
+use serde::de::IntoDeserializer;
+use serde::de::Deserializer;
+// use crate::models::_::_serde::Deserialize;
+
+// fn empty_oid_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+// where
+//     D: serde::Deserializer<'de>,
+//     T: serde::Deserialize<'de>,
+// {
+//     let opt = Option::<String>::deserialize(de)?;
+//     let opt = opt.as_ref().map(String::as_str);
+//     match opt {
+//         None | Some("") => Ok(None),
+//         Some(s) => T::deserialize(s.into_deserializer()).map(Some)
+//     }
+// }
+
+fn non_empty_oid<'de, D: Deserializer<'de>>(d: D) -> Result<Option<ObjectId>, D::Error> {
+    use serde::Deserialize;
+	let opt: Option<String> = Option::deserialize(d)?;
+	if let Some(s) = opt {
+		if s.len() > 0 {
+			ObjectId::deserialize(s.into_deserializer()).map(Some)
+		} else {
+			Ok(None)
+		}
+	} else {
+		Ok(None)
+	}
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Meta {
-	pub created_at: BsonDateTime,
-	pub created_by: ObjectId,
-	pub modified_at: Option<BsonDateTime>,
-	pub modified_by: Option<ObjectId>
+	// pub created_at: BsonDateTime,
+	// pub created_by: ObjectId,
+	// pub modified_at: Option<BsonDateTime>,
+	// #[serde(deserialize_with = "non_empty_oid")]
+	// pub modified_by: Option<ObjectId>
 }
 
 #[juniper::graphql_object]
@@ -208,12 +240,71 @@ impl PlaylistMeta {
 	pub fn cover(&self) -> &String {
 		&self.cover
 	}
+	pub fn count(&self) -> i32 {
+		self.videos
+	}
+	pub fn title(&self) -> &String {
+		&self.title
+	}
+	pub fn private(&self) -> bool {
+		self.private
+	}
+	pub fn privateEdit(&self) -> bool {
+		self.privateEdit
+	}
+}
+
+#[derive(Clone)]
+pub struct Playlist {
+	pub _id: ObjectId,
+	pub item: PlaylistMeta,
+	pub meta: Meta,
+	pub clearence: i32,
+	pub editable: Option<bool>,
+	pub owner: Option<bool>,
+	//pub videos: Vec<Video>
+}
+
+#[juniper::graphql_object]
+#[graphql(description="Playlist")]
+impl Playlist {
+	pub fn id(&self) -> ObjectId {
+		self._id.clone()
+	}
+	pub fn clearence(&self) -> &i32 {
+		&self.clearence
+	}
+	/// Metadata (created_at etc.)
+	pub fn meta(&self) -> &Meta {
+		&self.meta
+	}
+	/// Playlist metadata
+	pub fn item(&self) -> &PlaylistMeta {
+		&self.item
+	}
+	/// If current user can edit this playlist
+	pub fn editable(&self) -> Option<bool> {
+		self.editable
+	}
+	/// If current user can edit or delete this playlist
+	pub fn owner(&self) -> Option<bool> {
+		self.owner
+	}
+	pub async fn videos(&self, offset: i32, limit: i32) -> FieldResult<Vec<Video>> {
+		let videos = playlist::getPlaylistContent_impl(playlist::GetPlaylistContentParameters {
+			offset: offset,
+			limit: limit,
+			pid: self._id.to_string()
+		}).await?;
+		Ok(videos)
+	}
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PlaylistContentForVideo {
 	pub _id: ObjectId,
 	pub item: PlaylistMeta,
+	pub rank: i32,
 	pub next: Option<String>,
 	pub prev: Option<String>
 }
@@ -224,8 +315,20 @@ impl PlaylistContentForVideo {
 	pub fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
-	pub fn item(&self) -> &PlaylistMeta {
+	/// Playlist's metadata
+	pub fn meta(&self) -> &PlaylistMeta {
 		&self.item
+	}
+	/// Video's position in playlist
+	pub fn rank(&self) -> i32 {
+		self.rank
+	}
+	/// Get the actual playlist
+	pub async fn playlist(&self) -> FieldResult<Playlist> {
+		let playlist_meta = playlist::getPlaylist_impl(playlist::GetPlaylistParameters {
+			pid: self._id.to_string()
+		}).await?;
+		Ok(playlist_meta)
 	}
 	pub async fn next(&self, lang: String) -> FieldResult<Option<Video>> {
 		Ok(if let Some(vid) = &self.next {
@@ -257,7 +360,7 @@ impl PlaylistContentForVideo {
 // 	}
 // }
 
-use crate::services::{authorDB, editTags, getVideo};
+use crate::services::{authorDB, editTags, getVideo, playlist};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Video {
