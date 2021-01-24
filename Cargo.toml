@@ -25,8 +25,8 @@ rand = "0.7"
 chrono = { version = "*", features = ["serde"] }
 bson = "1.1.0"
 actix-rt = "*"
-serde = { version = "1.0.58", features = ["derive"] }
-serde_derive = "1.0.58"
+serde = { version = "1.0.59", features = ["derive"] }
+serde_derive = "1.0.59"
 #juniper = {version = "0.14.2", features = ["chrono"] }
 reqwest = { version = "0.10.7", features = ["blocking", "json"] }
 extend = "*"

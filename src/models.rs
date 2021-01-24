@@ -31,6 +31,43 @@ pub struct RestResult<T> {
 	pub data: Option<T>
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct User {
+	pub _id: ObjectId,
+	pub bind_qq: Option<bool>,
+	pub desc: String,
+	pub username: String,
+	pub image: String,
+	pub email: Option<String>,
+	pub meta: Meta
+}
+
+#[juniper::graphql_object]
+#[graphql(description="User")]
+impl User {
+	pub fn id(&self) -> ObjectId {
+		self._id.clone()
+	}
+	pub fn bind_qq(&self) -> Option<bool> {
+		self.bind_qq
+	}
+	pub fn desc(&self) -> &String {
+		&self.desc
+	}
+	pub fn username(&self) -> &String {
+		&self.username
+	}
+	pub fn image(&self) -> &String {
+		&self.image
+	}
+	pub fn email(&self) -> &Option<String> {
+		&self.email
+	}
+	pub fn meta(&self) -> &Meta {
+		&self.meta
+	}
+}
+
 use serde::de::IntoDeserializer;
 use serde::de::Deserializer;
 // use crate::models::_::_serde::Deserialize;
@@ -50,6 +87,10 @@ use serde::de::Deserializer;
 
 fn non_empty_oid<'de, D: Deserializer<'de>>(d: D) -> Result<Option<ObjectId>, D::Error> {
     use serde::Deserialize;
+	// let opt: Option<String> = match Option::deserialize(d) {
+	// 	Ok(a) => a,
+	// 	Err(_) => return Ok(None)
+	// };
 	let opt: Option<String> = Option::deserialize(d)?;
 	if let Some(s) = opt {
 		if s.len() > 0 {
@@ -63,52 +104,91 @@ fn non_empty_oid<'de, D: Deserializer<'de>>(d: D) -> Result<Option<ObjectId>, D:
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MyObjectId {
+	Oid(serde_json::Map<String, serde_json::Value>),
+	Str(String)
+}
+
+impl MyObjectId {
+	pub fn to_oid(&self) -> Option<ObjectId> {
+		match self {
+		    MyObjectId::Oid(o) => {
+				match o.get("$oid") {
+					Some(value) => {
+						match value.as_str() {
+							Some(s) => {
+								match ObjectId::with_string(s) {
+									Ok(oid) => Some(oid),
+									Err(_) => None
+								}
+							}
+							None => None
+						}
+					},
+					None => None
+				}
+			},
+		    MyObjectId::Str(s) => {
+				if s.len() > 0 {
+					match ObjectId::with_string(s) {
+						Ok(oid) => Some(oid),
+						Err(_) => None
+					}
+				} else {
+					None
+				}
+			}
+		}
+	}
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Meta {
-	// pub created_at: BsonDateTime,
-	// pub created_by: ObjectId,
-	// pub modified_at: Option<BsonDateTime>,
-	// #[serde(deserialize_with = "non_empty_oid")]
-	// pub modified_by: Option<ObjectId>
+	pub created_at: BsonDateTime,
+	pub created_by: Option<MyObjectId>,
+	pub modified_at: Option<BsonDateTime>,
+	pub modified_by: Option<MyObjectId>
 }
 
 #[juniper::graphql_object]
 #[graphql(description="Meta")]
 impl Meta {
-	pub fn test(&self) -> String {
-		"test".into()
+	pub fn created_at(&self) -> DateTime<chrono::Utc> {
+		self.created_at.to_UtcDateTime()
+	}
+	pub fn modified_at(&self) -> Option<DateTime<chrono::Utc>> {
+		self.modified_at.as_ref().map(|a| a.to_UtcDateTime())
+	}
+	pub async fn created_by(&self) -> FieldResult<Option<User>> {
+		match self.created_by.as_ref() {
+			Some(u) => {
+				let u = users::getUser_impl(users::GetUserParameters {
+					uid: match u.to_oid() {
+						Some(oid) => oid.to_string(),
+						None => { return Ok(None) }
+					}
+				}).await?;
+				Ok(Some(u))
+			},
+			None => Ok(None)
+		}
+	}
+	pub async fn modified_by(&self) -> FieldResult<Option<User>> {
+		match self.modified_by.as_ref() {
+			Some(u) => {
+				let u = users::getUser_impl(users::GetUserParameters {
+					uid: match u.to_oid() {
+						Some(oid) => oid.to_string(),
+						None => { return Ok(None) }
+					}
+				}).await?;
+				Ok(Some(u))
+			},
+			None => Ok(None)
+		}
 	}
 }
-
-
-// #[derive(Serialize, Deserialize)]
-// pub struct VideoItemRest {
-//     pub cover_image: String,
-//     pub title: String,
-//     pub desc: String,
-//     pub placeholder: bool,
-//     pub rating: i32,
-//     pub repost_type: String,
-//     pub copies: Vec<ObjectId>,
-//     pub series: Vec<ObjectId>,
-//     pub site: String,
-//     pub thumbnail_url: String,
-//     pub unique_id: String,
-//     pub upload_time: DateTime,
-//     pub url: String,
-//     pub user_space_urls: Option<Vec<String>>,
-//     pub utags: Vec<String>,
-//     pub views: i32
-// }
-
-// #[derive(Serialize, Deserialize)]
-// pub struct VideoRest {
-//     pub clearence: i32,
-//     pub item: VideoItemRest,
-//     pub meta: MetaRest,
-//     pub tag_count: i32,
-//     pub tags: Vec<i32>,
-//     pub tags_readable: Option<Vec<String>>
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BsonDateTime
@@ -360,7 +440,7 @@ impl PlaylistContentForVideo {
 // 	}
 // }
 
-use crate::services::{authorDB, editTags, getVideo, playlist};
+use crate::services::{authorDB, editTags, getVideo, playlist, users};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Video {
