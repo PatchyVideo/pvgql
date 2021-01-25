@@ -380,7 +380,8 @@ impl<S: ScalarValue> Playlist {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
-					is_author: true
+					is_author: true,
+					meta: tagobj.meta
 				})
 			} else {
 				Box::new(RegularTagObject {
@@ -390,7 +391,8 @@ impl<S: ScalarValue> Playlist {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					is_author: false
+					is_author: false,
+					meta: tagobj.meta
 				})
 			};
 			resp.push(ret);
@@ -534,7 +536,8 @@ impl<S: ScalarValue> Video {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
-					is_author: true
+					is_author: true,
+					meta: tagobj.meta
 				})
 			} else {
 				Box::new(RegularTagObject {
@@ -544,7 +547,8 @@ impl<S: ScalarValue> Video {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					is_author: false
+					is_author: false,
+					meta: tagobj.meta
 				})
 			};
 			resp.push(ret);
@@ -601,7 +605,8 @@ pub struct RegularTagObject {
 	pub count: i32,
 	pub languages: Vec<MultilingualMapping>,
 	pub alias: Vec<String>,
-	pub is_author: bool
+	pub is_author: bool,
+	pub meta: Meta
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
@@ -614,7 +619,8 @@ pub struct AuthorTagObject {
 	pub languages: Vec<MultilingualMapping>,
 	pub alias: Vec<String>,
 	pub author: Option<Author>,
-	pub is_author: bool
+	pub is_author: bool,
+	pub meta: Meta
 }
 
 #[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject])] // enumerating all implementers is mandatory 
@@ -626,6 +632,7 @@ pub trait TagObject {
 	async fn languages(&self) -> &Vec<MultilingualMapping>;
 	async fn alias(&self) -> &Vec<String>;
 	async fn is_author(&self) -> bool;
+	async fn meta(&self) -> &Meta;
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -651,6 +658,9 @@ impl TagObject for RegularTagObject {
 	async fn is_author(&self) -> bool {
 		false
 	}
+	async fn meta(&self) -> &Meta {
+		&self.meta
+	}
 }
 
 #[juniper::graphql_interface(dyn)]
@@ -675,6 +685,9 @@ impl TagObject for AuthorTagObject {
 	}
 	async fn is_author(&self) -> bool {
 		true
+	}
+	async fn meta(&self) -> &Meta {
+		&self.meta
 	}
 }
 
@@ -729,7 +742,8 @@ impl<S: ScalarValue> Author {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
-					is_author: true
+					is_author: true,
+					meta: tagobj.meta
 				})
 			} else {
 				Box::new(RegularTagObject {
@@ -739,7 +753,8 @@ impl<S: ScalarValue> Author {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					is_author: false
+					is_author: false,
+					meta: tagobj.meta
 				})
 			};
 			resp.push(ret);

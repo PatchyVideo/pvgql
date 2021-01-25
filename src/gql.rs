@@ -1,3 +1,4 @@
+use editTags::{ListTagParameters, listTags_impl};
 use juniper::FieldResult;
 use juniper::RootNode;
 
@@ -53,6 +54,9 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getTagObjects(para: editTags::GetTagObjectsBatchParameters) -> FieldResult<Vec<models::RegularTagObject>> {
 		editTags::getTagObjectsBatch_impl(para).await
+	}
+	pub async fn listTagObjects(para: editTags::ListTagParameters) -> FieldResult<editTags::ListTagsResult> {
+		editTags::listTags_impl(para).await
 	}
 	// ------------------------------------------------
 	//     authorDB
