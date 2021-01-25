@@ -10,7 +10,7 @@ use juniper::{
 	EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
 	Value, Variables,
 };
-use std::fmt;
+use std::{cell::RefMut, fmt};
 
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
@@ -397,6 +397,16 @@ impl<S: ScalarValue> Playlist {
 		};
 		Ok(resp)
 	}
+	pub async fn rating(&self) -> FieldResult<Option<Rating>> {
+		let rating = match rating::getRating_impl(rating::GetRatingParameters {
+			pid: Some(self._id.to_string()),
+			vid: None
+		}).await {
+			Ok(r) => r,
+			Err(_) => None
+		};
+		Ok(rating)
+	}
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -453,13 +463,7 @@ impl PlaylistContentForVideo {
 	}
 }
 
-// impl Video {
-// 	pub fn fill_missing_fields(&mut self) {
-
-// 	}
-// }
-
-use crate::services::{authorDB, editTags, getVideo, playlist, users};
+use crate::services::{authorDB, editTags, getVideo, playlist, rating, users};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Video {
@@ -568,6 +572,16 @@ impl<S: ScalarValue> Video {
 			}).await?;
 			Ok(vidobj.playlists.unwrap())
 		}
+	}
+	pub async fn rating(&self) -> FieldResult<Option<Rating>> {
+		let rating = match rating::getRating_impl(rating::GetRatingParameters {
+			vid: Some(self._id.to_string()),
+			pid: None
+		}).await {
+			Ok(r) => r,
+			Err(_) => None
+		};
+		Ok(rating)
 	}
 }
 
@@ -743,5 +757,29 @@ impl<S: ScalarValue> Author {
 	}
 	pub async fn desc(&self) -> &String {
 		&self.desc
+	}
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Rating {
+	/// Rating given by current user, null is not logged in or not rated
+	pub user_rating: Option<i32>,
+	/// Sum of ratings
+	pub total_rating: i32,
+	// Num of users rated this item
+	pub total_user: i32,
+}
+
+#[juniper::graphql_object]
+#[graphql(description="Rating")]
+impl Rating {
+	pub fn user_rating(&self) -> Option<i32> {
+		self.user_rating
+	}
+	pub fn total_rating(&self) -> i32 {
+		self.total_rating
+	}
+	pub fn total_user(&self) -> i32 {
+		self.total_user
 	}
 }

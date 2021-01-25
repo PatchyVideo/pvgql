@@ -2,7 +2,8 @@ use juniper::FieldResult;
 use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
-use crate::models;
+use models::Rating;
+use crate::{models};
 use crate::models::Error;
 use juniper::graphql_value;
 #[derive(Clone)]
@@ -25,7 +26,7 @@ impl juniper::Context for Context {}
 // mod user_manager;
 // use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
 
-use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users};
+use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating};
 
 pub struct Query;
 
@@ -73,6 +74,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getUser(para: users::GetUserParameters) -> FieldResult<models::User> {
 		users::getUser_impl(para).await
+	}
+	// ------------------------------------------------
+	//     rating
+	// ------------------------------------------------
+	pub async fn getRating(para: rating::GetRatingParameters) -> FieldResult<Option<models::Rating>> {
+		rating::getRating_impl(para).await
 	}
 }
 
