@@ -25,11 +25,21 @@ macro_rules! postRawJSON {
 	};
 }
 
+use serde_derive::{Serialize, Deserialize};
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct EmptyJSON {
+
+}
+
 macro_rules! postJSON {
-	($t:ident, $u:expr, $j:expr) => {
+	($t:ident, $u:expr, $j:expr, $c:ident) => {
 		{
 			let client = reqwest::Client::new();
-			let response = client.post(&$u).json(&$j).send().await?;
+			let response = match $c.session.as_ref() {
+				Some(sess) => client.post(&$u).header("cookie", format!("session={}", sess)).json(&$j).send().await?,
+				None => client.post(&$u).json(&$j).send().await?
+			};
 			if response.status().is_success() {
 				let obj : RestResult::<$t> = response.json().await?;
 				Ok(obj)

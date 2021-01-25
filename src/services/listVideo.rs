@@ -12,9 +12,10 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
+use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="listVideo required parameters")]
+#[graphql(description="listVideo required parameters", Context = Context)]
 pub struct ListVideoParameters {
 	/// Offset (start from 0)
 	pub offset: i32,
@@ -43,7 +44,7 @@ pub struct ListVideoResult {
 	pub page_count: i32
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[juniper::graphql(description="List video result")]
 impl ListVideoResult {
 	pub fn videos(&self) -> &Vec<Video> {
@@ -58,11 +59,11 @@ impl ListVideoResult {
 }
 
 
-pub async fn listVideo_impl(para: ListVideoParameters) -> FieldResult<ListVideoResult> {
+pub async fn listVideo_impl(context: &Context, para: ListVideoParameters) -> FieldResult<ListVideoResult> {
 	let result = if para.query.is_none() {
-		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/listvideo.do"), para)
+		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/listvideo.do"), para, context)
 	} else {
-		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para)
+		postJSON!(ListVideoResult, format!("https://thvideo.tv/be/queryvideo.do"), para, context)
 	};
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())

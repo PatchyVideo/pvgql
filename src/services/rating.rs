@@ -11,9 +11,10 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
+use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="required parameters for get user")]
+#[graphql(description="required parameters for get user", Context = Context)]
 pub struct GetRatingParameters {
 	/// ID of playlist
     pub pid: Option<String>,
@@ -28,14 +29,14 @@ pub struct GetRatingResult {
 	pub total_user: i32,
 }
 
-pub async fn getRating_impl(para: GetRatingParameters) -> FieldResult<Option<Rating>> { // TODO: user session ID
+pub async fn getRating_impl(context: &Context, para: GetRatingParameters) -> FieldResult<Option<Rating>> { // TODO: user session ID
     let mut result_opt = None;
     
     if para.pid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_playlist_total.do"), para));
+        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_playlist_total.do"), para, context));
     };
     if para.vid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_video_total.do"), para));
+        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_video_total.do"), para, context));
     }
     if result_opt.is_none() {
         return Err(

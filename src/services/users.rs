@@ -11,9 +11,10 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
+use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="required parameters for get user")]
+#[graphql(description="required parameters for get user", Context = Context)]
 pub struct GetUserParameters {
 	/// ID of user
     pub uid: String
@@ -35,8 +36,8 @@ pub struct GetProfileResult {
     pub meta: Meta,
 }
 
-pub async fn getUser_impl(para: GetUserParameters) -> FieldResult<User> {
-    let result = postJSON!(GetProfileResult, format!("https://thvideo.tv/be/user/profile.do"), para);
+pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldResult<User> {
+    let result = postJSON!(GetProfileResult, format!("https://thvideo.tv/be/user/profile.do"), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(User {
@@ -59,3 +60,14 @@ pub async fn getUser_impl(para: GetUserParameters) -> FieldResult<User> {
 		)
 	}
 }
+
+pub async fn whoami_impl(context: &Context) -> FieldResult<String> {
+    let result = postJSON!(String, format!("https://thvideo.tv/be/user/whoami"), crate::common::EmptyJSON {}, context);
+    if result.status == "SUCCEED" {
+        let r = result.data.unwrap();
+		Ok(r)
+	} else {
+		Ok("NOT_LOGGED_IN".to_string())
+	}
+}
+

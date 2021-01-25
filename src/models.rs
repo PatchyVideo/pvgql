@@ -15,6 +15,7 @@ use std::{cell::RefMut, fmt};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
+use crate::context::Context;
 
 #[path="./custom_scalar.rs"]
 mod custom_scalar;
@@ -42,7 +43,7 @@ pub struct User {
 	pub meta: Meta
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="User")]
 impl User {
 	pub fn id(&self) -> ObjectId {
@@ -119,7 +120,7 @@ pub struct Meta {
 	pub modified_by: Option<MyObjectId>
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Meta")]
 impl Meta {
 	pub fn created_at(&self) -> DateTime<chrono::Utc> {
@@ -128,10 +129,10 @@ impl Meta {
 	pub fn modified_at(&self) -> Option<DateTime<chrono::Utc>> {
 		self.modified_at.as_ref().map(|a| a.to_UtcDateTime())
 	}
-	pub async fn created_by(&self) -> FieldResult<Option<User>> {
+	pub async fn created_by(&self, context: &Context) -> FieldResult<Option<User>> {
 		match self.created_by.as_ref() {
 			Some(u) => {
-				let u = users::getUser_impl(users::GetUserParameters {
+				let u = users::getUser_impl(context, users::GetUserParameters {
 					uid: match u.to_oid() {
 						Some(oid) => oid.to_string(),
 						None => { return Ok(None) }
@@ -142,10 +143,10 @@ impl Meta {
 			None => Ok(None)
 		}
 	}
-	pub async fn modified_by(&self) -> FieldResult<Option<User>> {
+	pub async fn modified_by(&self, context: &Context) -> FieldResult<Option<User>> {
 		match self.modified_by.as_ref() {
 			Some(u) => {
-				let u = users::getUser_impl(users::GetUserParameters {
+				let u = users::getUser_impl(context, users::GetUserParameters {
 					uid: match u.to_oid() {
 						Some(oid) => oid.to_string(),
 						None => { return Ok(None) }
@@ -217,7 +218,7 @@ pub struct VideoItem {
 	pub views: i32
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Video Item")]
 impl VideoItem {
 	pub fn cover_image(&self) -> &String {
@@ -282,7 +283,7 @@ pub struct PlaylistMeta {
 	pub views: i32
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="PlaylistMeta")]
 impl PlaylistMeta {
 	pub fn cover(&self) -> &String {
@@ -314,7 +315,7 @@ pub struct Playlist {
 	pub tag_by_category: Option<Vec<TagCategoryItem>>,
 }
 
-#[juniper::graphql_object(scalar = S)]
+#[juniper::graphql_object(scalar = S, Context = Context)]
 #[graphql(description="Playlist")]
 impl<S: ScalarValue> Playlist {
 	pub fn id(&self) -> ObjectId {
@@ -339,8 +340,8 @@ impl<S: ScalarValue> Playlist {
 	pub fn owner(&self) -> Option<bool> {
 		self.owner
 	}
-	pub async fn videos(&self, offset: i32, limit: i32) -> FieldResult<Vec<Video>> {
-		let videos = playlist::getPlaylistContent_impl(playlist::GetPlaylistContentParameters {
+	pub async fn videos(&self, context: &Context, offset: i32, limit: i32) -> FieldResult<Vec<Video>> {
+		let videos = playlist::getPlaylistContent_impl(context, playlist::GetPlaylistContentParameters {
 			offset: offset,
 			limit: limit,
 			pid: self._id.to_string()
@@ -350,20 +351,20 @@ impl<S: ScalarValue> Playlist {
 	pub fn tag_ids(&self) -> Vec<i32> {
 		self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 	}
-	pub async fn tag_by_category(&self, lang: Option<String>) -> FieldResult<Vec<TagCategoryItem>> {
+	pub async fn tag_by_category(&self, context: &Context, lang: Option<String>) -> FieldResult<Vec<TagCategoryItem>> {
 		if let Some(catemap) = self.tag_by_category.clone() {
 			Ok(catemap)
 		} else {
 			//self.fill_missing_fields();
-			let playlist_obj = playlist::getPlaylist_impl(playlist::GetPlaylistParameters {
+			let playlist_obj = playlist::getPlaylist_impl(context, playlist::GetPlaylistParameters {
 				pid: self._id.to_string()
 			}).await?;
 
 			Ok(playlist_obj.tag_by_category.unwrap())
 		}
 	}
-	pub async fn tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 		}).await?;
 		let mut resp = vec![];
@@ -376,7 +377,7 @@ impl<S: ScalarValue> Playlist {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
@@ -399,8 +400,8 @@ impl<S: ScalarValue> Playlist {
 		};
 		Ok(resp)
 	}
-	pub async fn rating(&self) -> FieldResult<Option<Rating>> {
-		let rating = match rating::getRating_impl(rating::GetRatingParameters {
+	pub async fn rating(&self, context: &Context) -> FieldResult<Option<Rating>> {
+		let rating = match rating::getRating_impl(context, rating::GetRatingParameters {
 			pid: Some(self._id.to_string()),
 			vid: None
 		}).await {
@@ -420,7 +421,7 @@ pub struct PlaylistContentForVideo {
 	pub prev: Option<String>
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Playlist Content Generated From Query of a single video")]
 impl PlaylistContentForVideo {
 	pub fn id(&self) -> ObjectId {
@@ -435,15 +436,15 @@ impl PlaylistContentForVideo {
 		self.rank
 	}
 	/// Get the actual playlist
-	pub async fn playlist(&self) -> FieldResult<Playlist> {
-		let playlist_meta = playlist::getPlaylist_impl(playlist::GetPlaylistParameters {
+	pub async fn playlist(&self, context: &Context) -> FieldResult<Playlist> {
+		let playlist_meta = playlist::getPlaylist_impl(context, playlist::GetPlaylistParameters {
 			pid: self._id.to_string()
 		}).await?;
 		Ok(playlist_meta)
 	}
-	pub async fn next(&self, lang: String) -> FieldResult<Option<Video>> {
+	pub async fn next(&self, context: &Context, lang: String) -> FieldResult<Option<Video>> {
 		Ok(if let Some(vid) = &self.next {
-			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
 				lang: lang,
 				vid: vid.to_string()
 			}).await?;
@@ -452,9 +453,9 @@ impl PlaylistContentForVideo {
 			None
 		})
 	}
-	pub async fn prev(&self, lang: String) -> FieldResult<Option<Video>> {
+	pub async fn prev(&self, context: &Context, lang: String) -> FieldResult<Option<Video>> {
 		Ok(if let Some(vid) = &self.prev {
-			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
 				lang: lang,
 				vid: vid.to_string()
 			}).await?;
@@ -481,7 +482,7 @@ pub struct Video {
 	pub playlists: Option<Vec<PlaylistContentForVideo>>
 }
 
-#[juniper::graphql_object(scalar = S)]
+#[juniper::graphql_object(scalar = S, Context = Context)]
 #[graphql(description="Video")]
 impl<S: ScalarValue> Video {
 	pub fn id(&self) -> ObjectId {
@@ -505,12 +506,12 @@ impl<S: ScalarValue> Video {
 	pub fn tags_readable(&self) -> &Option<Vec<String>> {
 		&self.tags_readable
 	}
-	pub async fn tag_by_category(&self, lang: String) -> FieldResult<Vec<TagCategoryItem>> {
+	pub async fn tag_by_category(&self, context: &Context, lang: String) -> FieldResult<Vec<TagCategoryItem>> {
 		if let Some(catemap) = self.tag_by_category.clone() {
 			Ok(catemap)
 		} else {
 			//self.fill_missing_fields();
-			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
 				lang: lang,
 				vid: self._id.to_string()
 			}).await?;
@@ -518,8 +519,8 @@ impl<S: ScalarValue> Video {
 			Ok(vidobj.tag_by_category.unwrap())
 		}
 	}
-	pub async fn tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 		}).await?;
 		let mut resp = vec![];
@@ -532,7 +533,7 @@ impl<S: ScalarValue> Video {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
@@ -555,30 +556,30 @@ impl<S: ScalarValue> Video {
 		};
 		Ok(resp)
 	}
-	pub async fn copies(&self, lang: String) -> FieldResult<Vec<Video>> {
+	pub async fn copies(&self, context: &Context, lang: String) -> FieldResult<Vec<Video>> {
 		if let Some(copies) = self.copies.clone() {
 			Ok(copies)
 		} else {
-			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
 				lang: lang,
 				vid: self._id.to_string()
 			}).await?;
 			Ok(vidobj.copies.unwrap())
 		}
 	}
-	pub async fn playlists(&self, lang: String) -> FieldResult<Vec<PlaylistContentForVideo>> {
+	pub async fn playlists(&self, context: &Context, lang: String) -> FieldResult<Vec<PlaylistContentForVideo>> {
 		if let Some(playlists) = self.playlists.clone() {
 			Ok(playlists)
 		} else {
-			let vidobj = getVideo::getVideo_impl(getVideo::GetVideoParameters {
+			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
 				lang: lang,
 				vid: self._id.to_string()
 			}).await?;
 			Ok(vidobj.playlists.unwrap())
 		}
 	}
-	pub async fn rating(&self) -> FieldResult<Option<Rating>> {
-		let rating = match rating::getRating_impl(rating::GetRatingParameters {
+	pub async fn rating(&self, context: &Context) -> FieldResult<Option<Rating>> {
+		let rating = match rating::getRating_impl(context, rating::GetRatingParameters {
 			vid: Some(self._id.to_string()),
 			pid: None
 		}).await {
@@ -590,14 +591,14 @@ impl<S: ScalarValue> Video {
 }
 
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
-#[graphql(description="MultilingualMapping")]
+#[graphql(description="MultilingualMapping", Context = Context)]
 pub struct MultilingualMapping {
 	pub lang: String,
 	pub value: String
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
-#[graphql(description="RegularTagObject", impl = DynTagObject<__S>)]
+#[graphql(description="RegularTagObject", impl = DynTagObject<__S>, Context = Context)]
 pub struct RegularTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
@@ -610,7 +611,7 @@ pub struct RegularTagObject {
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
-#[graphql(description="AuthorTagObject", impl = DynTagObject<__S>)]
+#[graphql(description="AuthorTagObject", impl = DynTagObject<__S>, Context = Context)]
 pub struct AuthorTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
@@ -623,7 +624,7 @@ pub struct AuthorTagObject {
 	pub meta: Meta
 }
 
-#[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject])] // enumerating all implementers is mandatory 
+#[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject], Context = Context)] // enumerating all implementers is mandatory 
 pub trait TagObject {
 	async fn id(&self) -> ObjectId;
 	async fn tagid(&self) -> i32;
@@ -705,7 +706,7 @@ pub struct Author {
 	pub desc: String
 }
 
-#[juniper::graphql_object(scalar = S)]
+#[juniper::graphql_object(scalar = S, Context = Context)]
 #[graphql(description="Author")]
 impl<S: ScalarValue> Author {
 	pub async fn id(&self) -> ObjectId {
@@ -724,8 +725,8 @@ impl<S: ScalarValue> Author {
 	pub async fn common_tagids(&self) -> &Vec<i32> {
 		&self.common_tagids
 	}
-	pub async fn common_tags(&self) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(editTags::GetTagObjectsBatchParameters {
+	pub async fn common_tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.common_tagids.clone()
 		}).await?;
 		let mut resp = vec![];
@@ -738,7 +739,7 @@ impl<S: ScalarValue> Author {
 					category: tagobj.category.clone(),
 					languages: tagobj.languages.clone(),
 					count: tagobj.count,
-					author: match authorDB::getAuthor_impl(authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
 						Ok(ret) => Some(ret),
 						Err(_) => None
 					},
@@ -785,7 +786,7 @@ pub struct Rating {
 	pub total_user: i32,
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Rating")]
 impl Rating {
 	pub fn user_rating(&self) -> Option<i32> {

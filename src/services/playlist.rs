@@ -11,6 +11,7 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
+use crate::context::Context;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ResultantPlaylist {
@@ -36,14 +37,14 @@ pub struct GetPlaylistContentResult {
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="required parameters for get playlist")]
+#[graphql(description="required parameters for get playlist", Context = Context)]
 pub struct GetPlaylistParameters {
 	/// ID of playlist
     pub pid: String
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="required parameters for get playlist content")]
+#[graphql(description="required parameters for get playlist content", Context = Context)]
 pub struct GetPlaylistContentParameters {
     /// ID of playlist
     pub pid: String,
@@ -54,8 +55,8 @@ pub struct GetPlaylistContentParameters {
 }
 
 /// Only loads metadata
-pub async fn getPlaylist_impl(para: GetPlaylistParameters) -> FieldResult<Playlist> {
-    let result = postJSON!(GetPlaylistMetadataResult, format!("https://thvideo.tv/be/lists/get_playlist_metadata.do"), para);
+pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) -> FieldResult<Playlist> {
+    let result = postJSON!(GetPlaylistMetadataResult, format!("https://thvideo.tv/be/lists/get_playlist_metadata.do"), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
         let tag_by_cat = r.tags[2].as_object().ok_or(juniper::FieldError::new(
@@ -93,8 +94,8 @@ pub async fn getPlaylist_impl(para: GetPlaylistParameters) -> FieldResult<Playli
 	}
 }
 
-pub async fn getPlaylistContent_impl(para: GetPlaylistContentParameters) -> FieldResult<Vec<Video>> {
-    let result = postJSON!(GetPlaylistContentResult, format!("https://thvideo.tv/be/lists/get_playlist.do"), para);
+pub async fn getPlaylistContent_impl(context: &Context, para: GetPlaylistContentParameters) -> FieldResult<Vec<Video>> {
+    let result = postJSON!(GetPlaylistContentResult, format!("https://thvideo.tv/be/lists/get_playlist.do"), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(r.videos)
@@ -111,7 +112,7 @@ pub async fn getPlaylistContent_impl(para: GetPlaylistContentParameters) -> Fiel
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="listPlaylist required parameters")]
+#[graphql(description="listPlaylist required parameters", Context = Context)]
 pub struct ListPlaylistParameters {
 	/// Offset (start from 0)
 	pub offset: i32,
@@ -132,7 +133,7 @@ pub struct ListPlaylistResult {
 	pub page_count: i32
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[juniper::graphql(description="List playlist result")]
 impl ListPlaylistResult {
 	pub fn playlists(&self) -> Vec<Playlist> {
@@ -155,11 +156,11 @@ impl ListPlaylistResult {
 	}
 }
 
-pub async fn listPlatylist_impl(para: ListPlaylistParameters) -> FieldResult<ListPlaylistResult> {
+pub async fn listPlatylist_impl(context: &Context, para: ListPlaylistParameters) -> FieldResult<ListPlaylistResult> {
 	let result = if para.query.is_none() {
-		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/all.do"), para)
+		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/all.do"), para, context)
 	} else {
-		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/search.do"), para)
+		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/search.do"), para, context)
 	};
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())

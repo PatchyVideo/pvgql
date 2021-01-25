@@ -11,6 +11,7 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::*;
+use crate::context::Context;
 
 #[derive(Serialize, Deserialize)]
 pub struct GetVideoResponse {
@@ -21,7 +22,7 @@ pub struct GetVideoResponse {
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="listVideo required parameters")]
+#[graphql(description="listVideo required parameters", Context = Context)]
 pub struct GetVideoParameters {
 	/// Video ID
 	pub vid: String,
@@ -29,8 +30,8 @@ pub struct GetVideoParameters {
 	pub lang: String
 }
 
-pub async fn getVideo_impl(para: GetVideoParameters) -> FieldResult<Video> {
-	let result = postJSON!(GetVideoResponse, format!("https://thvideo.tv/be/getvideo.do"), para);
+pub async fn getVideo_impl(context: &Context, para: GetVideoParameters) -> FieldResult<Video> {
+	let result = postJSON!(GetVideoResponse, format!("https://thvideo.tv/be/getvideo.do"), para, context);
 	if result.status == "SUCCEED" {
 		let resp = result.data.unwrap();
 		let mut video = resp.video;

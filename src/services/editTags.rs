@@ -11,9 +11,10 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::*;
+use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
-#[graphql(description="getTagsBatch required parameters")]
+#[graphql(description="getTagsBatch required parameters", Context = Context)]
 pub struct GetTagObjectsBatchParameters {
 	/// Tag IDs
 	pub tagid: Vec<i32>,
@@ -35,8 +36,8 @@ pub struct TagObjectResp {
 	pub tag_objs: Vec<TagObjectRespObject>
 }
 
-pub async fn getTagObjectsBatch_impl(para: GetTagObjectsBatchParameters) -> FieldResult<Vec<RegularTagObject>> {
-	let result = postJSON!(TagObjectResp, format!("https://thvideo.tv/be/tags/get_tag_batch.do"), para);
+pub async fn getTagObjectsBatch_impl(context: &Context, para: GetTagObjectsBatchParameters) -> FieldResult<Vec<RegularTagObject>> {
+	let result = postJSON!(TagObjectResp, format!("https://thvideo.tv/be/tags/get_tag_batch.do"), para, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().tag_objs.iter().map(|tagobj| {
 			RegularTagObject {
@@ -72,7 +73,7 @@ pub async fn getTagObjectsBatch_impl(para: GetTagObjectsBatchParameters) -> Fiel
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
-#[graphql(description="required parameters for listing tags")]
+#[graphql(description="required parameters for listing tags", Context = Context)]
 pub struct ListTagParameters {
 	/// Query
 	pub query: Option<String>,
@@ -100,7 +101,7 @@ pub struct ListTagsResult {
 	pub page_count: i32
 }
 
-#[juniper::graphql_object]
+#[juniper::graphql_object(Context = Context)]
 #[juniper::graphql(description="List tags result")]
 impl ListTagsResult {
 	pub fn tags(&self) -> &Vec<RegularTagObject> {
@@ -114,17 +115,17 @@ impl ListTagsResult {
 	}
 }
 
-pub async fn listTags_impl(para: ListTagParameters) -> FieldResult<ListTagsResult>
+pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldResult<ListTagsResult>
 {
 	let mut result_opt = None;
 	if para.query.is_none() && para.category.is_some() {
-		result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags.do"), para));
+		result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags.do"), para, context));
 	} else if para.query.is_some() {
 		let use_regex = para.query_regex.map_or(false, |f| f);
 		if use_regex {
-			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_regex.do"), para));
+			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_regex.do"), para, context));
 		} else {
-			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_wildcard.do"), para));
+			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_wildcard.do"), para, context));
 		}
 	};
 	if result_opt.is_none() {
