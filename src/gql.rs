@@ -3,8 +3,9 @@ use juniper::{FieldResult, GraphQLSubscriptionValue};
 use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
-use models::Rating;
-use crate::{models};
+use models::{Rating};
+use subscription::ListSubscriptionVideosParameters;
+use crate::{models, services::subscription};
 use crate::models::Error;
 use juniper::graphql_value;
 
@@ -83,6 +84,18 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getRating(context: &Context, para: rating::GetRatingParameters) -> FieldResult<Option<models::Rating>> {
 		rating::getRating_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     subscriptions
+	// ------------------------------------------------
+	pub async fn listSubscriptions(context: &Context) -> FieldResult<Vec<models::Subscription>> {
+		subscription::listSubscriptions_impl(context).await
+	}
+	pub async fn listSubscriptionVideos(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
+		subscription::listSubscriptionVideos_impl(context, para).await
+	}
+	pub async fn listSubscriptionVideosRandomized(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
+		subscription::listSubscriptionVideosRandomized_impl(context, para).await
 	}
 }
 

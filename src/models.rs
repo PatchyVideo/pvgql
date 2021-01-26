@@ -799,3 +799,48 @@ impl Rating {
 		self.total_user
 	}
 }
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Subscription {
+	pub _id: ObjectId,
+	/// Query
+	pub qs: String,
+	/// Query type, one of 'tag', 'text'
+	pub qt: String,
+	/// Name of this subscription
+	pub name: Option<String>,
+	pub meta: Meta
+}
+
+#[juniper::graphql_object(Context = Context)]
+#[graphql(description="Subscription")]
+impl Subscription {
+	pub async fn id(&self) -> ObjectId {
+		self._id.clone()
+	}
+	/// Query
+	pub fn query(&self) -> &String {
+		&self.qs
+	}
+	/// Query type, one of 'tag', 'text'
+	pub fn query_type(&self) -> &String {
+		&self.qt
+	}
+	/// Name of this query
+	pub fn name(&self) -> Option<String> {
+		match self.name.as_ref() {
+			Some(s) => {
+				if s.len() > 0 {
+					Some(s.clone())
+				} else {
+					None
+				}
+			},
+			None => None
+		}
+	}
+	pub fn meta(&self) -> &Meta {
+		&self.meta
+	}
+}
+
