@@ -56,7 +56,7 @@ pub struct GetPlaylistContentParameters {
 
 /// Only loads metadata
 pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) -> FieldResult<Playlist> {
-    let result = postJSON!(GetPlaylistMetadataResult, format!("https://thvideo.tv/be/lists/get_playlist_metadata.do"), para, context);
+    let result = postJSON!(GetPlaylistMetadataResult, format!("{}/lists/get_playlist_metadata.do", BACKEND_URL), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
         let tag_by_cat = r.tags[2].as_object().ok_or(juniper::FieldError::new(
@@ -95,7 +95,7 @@ pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) ->
 }
 
 pub async fn getPlaylistContent_impl(context: &Context, para: GetPlaylistContentParameters) -> FieldResult<Vec<Video>> {
-    let result = postJSON!(GetPlaylistContentResult, format!("https://thvideo.tv/be/lists/get_playlist.do"), para, context);
+    let result = postJSON!(GetPlaylistContentResult, format!("{}/lists/get_playlist.do", BACKEND_URL), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(r.videos)
@@ -158,9 +158,9 @@ impl ListPlaylistResult {
 
 pub async fn listPlatylist_impl(context: &Context, para: ListPlaylistParameters) -> FieldResult<ListPlaylistResult> {
 	let result = if para.query.is_none() {
-		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/all.do"), para, context)
+		postJSON!(ListPlaylistResult, format!("{}/lists/all.do", BACKEND_URL), para, context)
 	} else {
-		postJSON!(ListPlaylistResult, format!("https://thvideo.tv/be/lists/search.do"), para, context)
+		postJSON!(ListPlaylistResult, format!("{}/lists/search.do", BACKEND_URL), para, context)
 	};
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())

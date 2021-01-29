@@ -18,7 +18,7 @@ pub struct ListAllSubscriptionResult {
 }
 
 pub async fn listSubscriptions_impl(context: &Context) -> FieldResult<Vec<Subscription>> {
-    let result = postJSON!(ListAllSubscriptionResult, format!("https://thvideo.tv/be/subs/all.do"), EmptyJSON {}, context);
+    let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON {}, context);
     if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().subs)
 	} else {
@@ -75,7 +75,7 @@ impl ListSubscriptionVideosResult {
 }
 
 pub async fn listSubscriptionVideos_impl(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<ListSubscriptionVideosResult> {
-    let result = postJSON!(ListSubscriptionVideosResult, format!("https://thvideo.tv/be/subs/list.do"), para, context);
+    let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list.do", BACKEND_URL), para, context);
     if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())
 	} else {
@@ -91,7 +91,7 @@ pub async fn listSubscriptionVideos_impl(context: &Context, para: ListSubscripti
 }
 
 pub async fn listSubscriptionVideosRandomized_impl(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<ListSubscriptionVideosResult> {
-    let result = postJSON!(ListSubscriptionVideosResult, format!("https://thvideo.tv/be/subs/list_randomized.do"), para, context);
+    let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list_randomized.do", BACKEND_URL), para, context);
     if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())
 	} else {

@@ -31,7 +31,7 @@ pub struct GetVideoParameters {
 }
 
 pub async fn getVideo_impl(context: &Context, para: GetVideoParameters) -> FieldResult<Video> {
-	let result = postJSON!(GetVideoResponse, format!("https://thvideo.tv/be/getvideo.do"), para, context);
+	let result = postJSON!(GetVideoResponse, format!("{}/getvideo.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		let resp = result.data.unwrap();
 		let mut video = resp.video;

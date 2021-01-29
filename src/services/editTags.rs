@@ -37,7 +37,7 @@ pub struct TagObjectResp {
 }
 
 pub async fn getTagObjectsBatch_impl(context: &Context, para: GetTagObjectsBatchParameters) -> FieldResult<Vec<RegularTagObject>> {
-	let result = postJSON!(TagObjectResp, format!("https://thvideo.tv/be/tags/get_tag_batch.do"), para, context);
+	let result = postJSON!(TagObjectResp, format!("{}/tags/get_tag_batch.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().tag_objs.iter().map(|tagobj| {
 			RegularTagObject {
@@ -119,13 +119,13 @@ pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldR
 {
 	let mut result_opt = None;
 	if para.query.is_none() && para.category.is_some() {
-		result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags.do"), para, context));
+		result_opt = Some(postJSON!(ListTagsRespObject, format!("{}/tags/query_tags.do", BACKEND_URL), para, context));
 	} else if para.query.is_some() {
 		let use_regex = para.query_regex.map_or(false, |f| f);
 		if use_regex {
-			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_regex.do"), para, context));
+			result_opt = Some(postJSON!(ListTagsRespObject, format!("{}/tags/query_tags_regex.do", BACKEND_URL), para, context));
 		} else {
-			result_opt = Some(postJSON!(ListTagsRespObject, format!("https://thvideo.tv/be/tags/query_tags_wildcard.do"), para, context));
+			result_opt = Some(postJSON!(ListTagsRespObject, format!("{}/tags/query_tags_wildcard.do", BACKEND_URL), para, context));
 		}
 	};
 	if result_opt.is_none() {

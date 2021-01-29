@@ -37,7 +37,7 @@ pub struct GetProfileResult {
 }
 
 pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldResult<User> {
-    let result = postJSON!(GetProfileResult, format!("https://thvideo.tv/be/user/profile.do"), para, context);
+    let result = postJSON!(GetProfileResult, format!("{}/user/profile.do", BACKEND_URL), para, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(User {
@@ -62,7 +62,7 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
 }
 
 pub async fn whoami_impl(context: &Context) -> FieldResult<String> {
-    let result = postJSON!(String, format!("https://thvideo.tv/be/user/whoami"), crate::common::EmptyJSON {}, context);
+    let result = postJSON!(String, format!("{}/user/whoami", BACKEND_URL), EmptyJSON {}, context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(r)

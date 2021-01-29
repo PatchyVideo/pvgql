@@ -32,6 +32,8 @@ pub struct EmptyJSON {
 
 }
 
+pub const BACKEND_URL: &str = "http://web:5000/be"; // https://thvideo.tv/be
+
 macro_rules! postJSON {
 	($t:ident, $u:expr, $j:expr, $c:ident) => {
 		{

@@ -26,7 +26,7 @@ pub struct GetAuthorResp {
 }
 
 pub async fn getAuthor_impl(context: &Context, para: GetAuthorParameters) -> FieldResult<Author> {
-	let result = postJSON!(GetAuthorResp, format!("https://thvideo.tv/be/authors/get_record_raw.do"), para, context);
+	let result = postJSON!(GetAuthorResp, format!("{}/authors/get_record_raw.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().record)
 	} else {

@@ -33,10 +33,10 @@ pub async fn getRating_impl(context: &Context, para: GetRatingParameters) -> Fie
     let mut result_opt = None;
     
     if para.pid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_playlist_total.do"), para, context));
+        result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_playlist_total.do", BACKEND_URL), para, context));
     };
     if para.vid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("https://thvideo.tv/be/rating/get_video_total.do"), para, context));
+        result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_video_total.do", BACKEND_URL), para, context));
     }
     if result_opt.is_none() {
         return Err(
