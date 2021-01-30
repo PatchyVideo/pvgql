@@ -40,6 +40,7 @@ async fn graphql(
 	payload: actix_web::web::Payload,
 	schema: web::Data<Schema>,
 ) -> Result<HttpResponse, Error> {
+	println!("handling gql request");
 	let session = req.cookie("session").map(|f| f.value().to_string());
 	let ctx = Context {
 		session: session
@@ -58,10 +59,6 @@ async fn main() -> std::io::Result<()> {
 			.data(create_schema())
 			.wrap(
 				Cors::default()
-					.allowed_origin("http://localhost:3000")
-					.allowed_origin("http://127.0.0.1:3000")
-					.allowed_origin("http://localhost:5008")
-					.allowed_origin("http://127.0.0.1:5008")
 					.allow_any_header()
 					.allow_any_method()
 					.supports_credentials()
@@ -77,5 +74,5 @@ async fn main() -> std::io::Result<()> {
 			.service(web::resource("/playground").route(web::get().to(playground_handler)))
 			.service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
 	});
-	server.bind("0.0.0.0:5008").unwrap().run().await
+	server.bind("127.0.0.1:5008").unwrap().run().await
 }
