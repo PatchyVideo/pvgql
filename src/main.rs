@@ -51,6 +51,7 @@ async fn graphql(
 async fn main() -> std::io::Result<()> {
 	//env::set_var("RUST_LOG", "info");
 	//env_logger::init();
+	println!("Listening on 127.0.0.1:5008");
 
 	let server = HttpServer::new(move || {
 		App::new()
@@ -76,5 +77,5 @@ async fn main() -> std::io::Result<()> {
 			.service(web::resource("/playground").route(web::get().to(playground_handler)))
 			.service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
 	});
-	server.bind("127.0.0.1:8080").unwrap().run().await
+	server.bind("0.0.0.0:5008").unwrap().run().await
 }
