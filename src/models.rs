@@ -382,6 +382,7 @@ impl<S: ScalarValue> Playlist {
 						Err(_) => None
 					},
 					is_author: true,
+					author_role: "author".to_string(),
 					meta: tagobj.meta
 				})
 			} else {
@@ -538,6 +539,7 @@ impl<S: ScalarValue> Video {
 						Err(_) => None
 					},
 					is_author: true,
+					author_role: "author".to_string(),
 					meta: tagobj.meta
 				})
 			} else {
@@ -621,7 +623,8 @@ pub struct AuthorTagObject {
 	pub alias: Vec<String>,
 	pub author: Option<Author>,
 	pub is_author: bool,
-	pub meta: Meta
+	pub meta: Meta,
+	pub author_role: String
 }
 
 #[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject], Context = Context)] // enumerating all implementers is mandatory 
@@ -744,6 +747,7 @@ impl<S: ScalarValue> Author {
 						Err(_) => None
 					},
 					is_author: true,
+					author_role: "author".to_string(),
 					meta: tagobj.meta
 				})
 			} else {
