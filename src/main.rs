@@ -57,14 +57,6 @@ async fn main() -> std::io::Result<()> {
 	let server = HttpServer::new(move || {
 		App::new()
 			.data(create_schema())
-			.wrap(
-				Cors::default()
-					.allow_any_origin()
-					.allow_any_header()
-					.allow_any_method()
-					.supports_credentials()
-					.max_age(3600),
-			)
 			.wrap(middleware::Compress::default())
 			.wrap(middleware::Logger::default())
 			.service(
