@@ -18,8 +18,8 @@ pub struct ListAllSubscriptionResult {
 }
 
 pub async fn listSubscriptions_impl(context: &Context) -> FieldResult<Vec<Subscription>> {
-    let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON {}, context);
-    if result.status == "SUCCEED" {
+	let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON {}, context);
+	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().subs)
 	} else {
 		Err(
@@ -47,16 +47,16 @@ pub struct ListSubscriptionVideosParameters {
 	/// If true, no placeholder items will be shown
 	pub hide_placeholder: Option<bool>,
 	/// User language
-    pub lang: Option<String>,
-    /// Visible subscriptions, list of obejctid
-    pub visible: Option<Vec<String>>
+	pub lang: Option<String>,
+	/// Visible subscriptions, list of obejctid
+	pub visible: Option<Vec<String>>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ListSubscriptionVideosResult {
 	pub videos: Vec<Video>,
 	pub total: i32,
-    pub objs: Vec<Subscription>
+	pub objs: Vec<Subscription>
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -67,16 +67,16 @@ impl ListSubscriptionVideosResult {
 	}
 	pub fn count(&self) -> &i32 {
 		&self.total
-    }
-    /// Return subscriptions used
+	}
+	/// Return subscriptions used
 	pub fn subscriptions(&self) -> &Vec<Subscription> {
 		&self.objs
 	}
 }
 
 pub async fn listSubscriptionVideos_impl(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<ListSubscriptionVideosResult> {
-    let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list.do", BACKEND_URL), para, context);
-    if result.status == "SUCCEED" {
+	let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())
 	} else {
 		Err(
@@ -91,8 +91,8 @@ pub async fn listSubscriptionVideos_impl(context: &Context, para: ListSubscripti
 }
 
 pub async fn listSubscriptionVideosRandomized_impl(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<ListSubscriptionVideosResult> {
-    let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list_randomized.do", BACKEND_URL), para, context);
-    if result.status == "SUCCEED" {
+	let result = postJSON!(ListSubscriptionVideosResult, format!("{}/subs/list_randomized.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap())
 	} else {
 		Err(
