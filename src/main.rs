@@ -40,7 +40,6 @@ async fn graphql(
 	payload: actix_web::web::Payload,
 	schema: web::Data<Schema>,
 ) -> Result<HttpResponse, Error> {
-	println!("handling gql request");
 	let session = req.cookie("session").map(|f| f.value().to_string());
 	let ctx = Context {
 		session: session

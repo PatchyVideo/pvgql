@@ -8,3 +8,4 @@ pub mod playlist;
 pub mod users;
 pub mod rating;
 pub mod tags;
+pub mod notification;

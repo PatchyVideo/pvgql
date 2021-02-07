@@ -4,6 +4,7 @@ use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
 use models::{Rating};
+use notification::ListNotificationParameters;
 use subscription::ListSubscriptionVideosParameters;
 use crate::{models, services::subscription};
 use crate::models::Error;
@@ -23,7 +24,7 @@ use juniper::graphql_value;
 // mod user_manager;
 // use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
 
-use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating};
+use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating, notification};
 use crate::context::Context;
 
 pub struct Query;
@@ -96,6 +97,12 @@ impl Query {
 	}
 	pub async fn listSubscriptionVideosRandomized(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
 		subscription::listSubscriptionVideosRandomized_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     notification
+	// ------------------------------------------------
+	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<Vec<notification::NotificationObjectValue>> {
+		notification::listNotification_impl(context, para).await
 	}
 }
 
