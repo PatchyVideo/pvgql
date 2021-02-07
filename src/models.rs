@@ -315,9 +315,9 @@ pub struct Playlist {
 	pub tag_by_category: Option<Vec<TagCategoryItem>>,
 }
 
-#[juniper::graphql_object(scalar = S, Context = Context)]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Playlist")]
-impl<S: ScalarValue> Playlist {
+impl Playlist {
 	pub fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
@@ -363,14 +363,14 @@ impl<S: ScalarValue> Playlist {
 			Ok(playlist_obj.tag_by_category.unwrap())
 		}
 	}
-	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
 		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
-				Box::new(AuthorTagObject {
+			let ret: TagObjectValue = if tagobj.category == "Author" {
+				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -384,9 +384,9 @@ impl<S: ScalarValue> Playlist {
 					is_author: true,
 					author_role: "author".to_string(),
 					meta: tagobj.meta
-				})
+				}.into()
 			} else {
-				Box::new(RegularTagObject {
+				RegularTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -395,7 +395,7 @@ impl<S: ScalarValue> Playlist {
 					count: tagobj.count,
 					is_author: false,
 					meta: tagobj.meta
-				})
+				}.into()
 			};
 			resp.push(ret);
 		};
@@ -483,9 +483,9 @@ pub struct Video {
 	pub playlists: Option<Vec<PlaylistContentForVideo>>
 }
 
-#[juniper::graphql_object(scalar = S, Context = Context)]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Video")]
-impl<S: ScalarValue> Video {
+impl Video {
 	pub fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
@@ -520,14 +520,14 @@ impl<S: ScalarValue> Video {
 			Ok(vidobj.tag_by_category.unwrap())
 		}
 	}
-	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
 		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
-				Box::new(AuthorTagObject {
+			let ret: TagObjectValue = if tagobj.category == "Author" {
+				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -541,9 +541,9 @@ impl<S: ScalarValue> Video {
 					is_author: true,
 					author_role: "author".to_string(),
 					meta: tagobj.meta
-				})
+				}.into()
 			} else {
-				Box::new(RegularTagObject {
+				RegularTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -552,7 +552,7 @@ impl<S: ScalarValue> Video {
 					count: tagobj.count,
 					is_author: false,
 					meta: tagobj.meta
-				})
+				}.into()
 			};
 			resp.push(ret);
 		};
@@ -600,7 +600,7 @@ pub struct MultilingualMapping {
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
-#[graphql(description="RegularTagObject", impl = DynTagObject<__S>, Context = Context)]
+#[graphql(description="RegularTagObject", impl = TagObjectValue, Context = Context)]
 pub struct RegularTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
@@ -613,7 +613,7 @@ pub struct RegularTagObject {
 }
 
 #[derive(GraphQLObject, Clone, Serialize, Deserialize)]
-#[graphql(description="AuthorTagObject", impl = DynTagObject<__S>, Context = Context)]
+#[graphql(description="AuthorTagObject", impl = TagObjectValue, Context = Context)]
 pub struct AuthorTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
@@ -627,7 +627,7 @@ pub struct AuthorTagObject {
 	pub author_role: String
 }
 
-#[graphql_interface(dyn = DynTagObject, for = [RegularTagObject, AuthorTagObject], Context = Context)] // enumerating all implementers is mandatory 
+#[graphql_interface(for = [RegularTagObject, AuthorTagObject], Context = Context)] // enumerating all implementers is mandatory 
 pub trait TagObject {
 	async fn id(&self) -> ObjectId;
 	async fn tagid(&self) -> i32;
@@ -639,7 +639,7 @@ pub trait TagObject {
 	async fn meta(&self) -> &Meta;
 }
 
-#[juniper::graphql_interface(dyn)]
+#[juniper::graphql_interface]
 impl TagObject for RegularTagObject {
 	async fn id(&self) -> ObjectId {
 		self._id.clone()
@@ -667,7 +667,7 @@ impl TagObject for RegularTagObject {
 	}
 }
 
-#[juniper::graphql_interface(dyn)]
+#[juniper::graphql_interface]
 impl TagObject for AuthorTagObject {
 	async fn id(&self) -> ObjectId {
 		self._id.clone()
@@ -709,9 +709,9 @@ pub struct Author {
 	pub desc: String
 }
 
-#[juniper::graphql_object(scalar = S, Context = Context)]
+#[juniper::graphql_object(Context = Context)]
 #[graphql(description="Author")]
-impl<S: ScalarValue> Author {
+impl Author {
 	pub async fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
@@ -728,14 +728,14 @@ impl<S: ScalarValue> Author {
 	pub async fn common_tagids(&self) -> &Vec<i32> {
 		&self.common_tagids
 	}
-	pub async fn common_tags(&self, context: &Context) -> FieldResult<Vec<Box<DynTagObject<'_, S>>>> {
+	pub async fn common_tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
 		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.common_tagids.clone()
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: Box<DynTagObject<'_, _>> = if tagobj.category == "Author" {
-				Box::new(AuthorTagObject {
+			let ret: TagObjectValue = if tagobj.category == "Author" {
+				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -749,9 +749,9 @@ impl<S: ScalarValue> Author {
 					is_author: true,
 					author_role: "author".to_string(),
 					meta: tagobj.meta
-				})
+				}.into()
 			} else {
-				Box::new(RegularTagObject {
+				RegularTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
 					alias: tagobj.alias.clone(),
@@ -760,7 +760,7 @@ impl<S: ScalarValue> Author {
 					count: tagobj.count,
 					is_author: false,
 					meta: tagobj.meta
-				})
+				}.into()
 			};
 			resp.push(ret);
 		};

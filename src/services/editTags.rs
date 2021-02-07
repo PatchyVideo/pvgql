@@ -12,6 +12,7 @@ use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::*;
 use crate::context::Context;
+use crate::services::authorDB;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="getTagsBatch required parameters", Context = Context)]
@@ -104,8 +105,40 @@ pub struct ListTagsResult {
 #[juniper::graphql_object(Context = Context)]
 #[juniper::graphql(description="List tags result")]
 impl ListTagsResult {
-	pub fn tags(&self) -> &Vec<RegularTagObject> {
-		&self.tags
+	pub async fn tags(&self, context: &Context) -> Vec<TagObjectValue> {
+		let mut result = Vec::new();
+		for tagobj in self.tags.iter() {
+			let ret: TagObjectValue = if tagobj.category == "Author" {
+				AuthorTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
+						Ok(ret) => Some(ret),
+						Err(_) => None
+					},
+					is_author: true,
+					author_role: "author".to_string(),
+					meta: tagobj.meta.clone()
+				}.into()
+			} else {
+				RegularTagObject {
+					tagid: tagobj.tagid,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: tagobj.languages.clone(),
+					count: tagobj.count,
+					is_author: false,
+					meta: tagobj.meta.clone()
+				}.into()
+			};
+			result.push(ret);
+		}
+		result
 	}
 	pub fn count(&self) -> &i32 {
 		&self.count
