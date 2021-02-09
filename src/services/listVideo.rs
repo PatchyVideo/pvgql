@@ -18,9 +18,9 @@ use crate::context::Context;
 #[graphql(description="listVideo required parameters", Context = Context)]
 pub struct ListVideoParameters {
 	/// Offset (start from 0)
-	pub offset: i32,
+	pub offset: Option<i32>,
 	/// Num of item in a page
-	pub limit: i32,
+	pub limit: Option<i32>,
 	/// Query
 	pub query: Option<String>,
 	/// Query type, one of tag, text

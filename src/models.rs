@@ -340,7 +340,7 @@ impl Playlist {
 	pub fn owner(&self) -> Option<bool> {
 		self.owner
 	}
-	pub async fn videos(&self, context: &Context, offset: i32, limit: i32) -> FieldResult<Vec<Video>> {
+	pub async fn videos(&self, context: &Context, offset: Option<i32>, limit: Option<i32>) -> FieldResult<Vec<Video>> {
 		let videos = playlist::getPlaylistContent_impl(context, playlist::GetPlaylistContentParameters {
 			offset: offset,
 			limit: limit,

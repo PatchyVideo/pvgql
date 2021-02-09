@@ -49,9 +49,9 @@ pub struct GetPlaylistContentParameters {
     /// ID of playlist
     pub pid: String,
 	/// Offset (start from 0)
-	pub offset: i32,
+	pub offset: Option<i32>,
 	/// Num of item in a page
-	pub limit: i32,
+	pub limit: Option<i32>,
 }
 
 /// Only loads metadata
@@ -115,9 +115,9 @@ pub async fn getPlaylistContent_impl(context: &Context, para: GetPlaylistContent
 #[graphql(description="listPlaylist required parameters", Context = Context)]
 pub struct ListPlaylistParameters {
 	/// Offset (start from 0)
-	pub offset: i32,
+	pub offset: Option<i32>,
 	/// Num of item in a page
-	pub limit: i32,
+	pub limit: Option<i32>,
 	/// Query
 	pub query: Option<String>,
 	/// List order, one of 'latest', 'oldest', 'last_modified'
