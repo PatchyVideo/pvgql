@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use models::{Rating};
 use notification::ListNotificationParameters;
 use subscription::ListSubscriptionVideosParameters;
-use crate::{models, services::subscription};
+use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, subscription}};
 use crate::models::Error;
 use juniper::graphql_value;
 
@@ -103,6 +103,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<Vec<notification::NotificationObjectValue>> {
 		notification::listNotification_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     comment
+	// ------------------------------------------------
+	pub async fn getThread(context: &Context, para: GetThreadParameters) -> FieldResult<Thread> {
+		comment::getThread_impl(context, para).await
 	}
 }
 

@@ -21,6 +21,7 @@ pub struct ResultantPlaylist {
     pub tag_count: i32,
     pub tags: Vec<i64>,
 	pub clearence: i32,
+	pub comment_thread: Option<ObjectId>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -80,7 +81,8 @@ pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) ->
             editable: Some(r.editable),
             owner: Some(r.owner),
             tags: r.playlist.tags,
-            tag_by_category: Some(catemap)
+            tag_by_category: Some(catemap),
+			comment_thread: r.playlist.comment_thread
         })
 	} else {
 		Err(
@@ -145,7 +147,8 @@ impl ListPlaylistResult {
             editable: None,
             owner: None,
             tags: r.tags.clone(),
-            tag_by_category: None
+            tag_by_category: None,
+			comment_thread: r.comment_thread.clone()
         }).collect::<Vec<_>>()
 	}
 	pub fn count(&self) -> &i32 {

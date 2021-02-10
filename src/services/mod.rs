@@ -9,3 +9,4 @@ pub mod users;
 pub mod rating;
 pub mod tags;
 pub mod notification;
+pub mod comment;

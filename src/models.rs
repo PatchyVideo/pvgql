@@ -15,7 +15,7 @@ use std::{cell::RefMut, fmt};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
-use crate::context::Context;
+use crate::{context::Context, services::comment::{self, Thread}};
 
 #[path="./custom_scalar.rs"]
 mod custom_scalar;
@@ -313,6 +313,7 @@ pub struct Playlist {
 	pub owner: Option<bool>,
 	pub tags: Vec<i64>,
 	pub tag_by_category: Option<Vec<TagCategoryItem>>,
+	pub comment_thread: Option<ObjectId>
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -411,6 +412,16 @@ impl Playlist {
 		};
 		Ok(rating)
 	}
+	pub async fn comment_thread(&self, context: &Context) -> FieldResult<Option<Thread>> {
+		Ok(match self.comment_thread.as_ref() {
+			Some(thread_id) => {
+				Some(comment::getThread_impl(context, comment::GetThreadParameters {
+					thread_id: thread_id.to_string()
+				}).await?)
+			},
+			None => None
+		})
+	}
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -480,7 +491,8 @@ pub struct Video {
 	pub tags_readable: Option<Vec<String>>,
 	pub tag_by_category: Option<Vec<TagCategoryItem>>,
 	pub copies: Option<Vec<Video>>,
-	pub playlists: Option<Vec<PlaylistContentForVideo>>
+	pub playlists: Option<Vec<PlaylistContentForVideo>>,
+	pub comment_thread: Option<ObjectId>
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -589,6 +601,16 @@ impl Video {
 			Err(_) => None
 		};
 		Ok(rating)
+	}
+	pub async fn comment_thread(&self, context: &Context) -> FieldResult<Option<Thread>> {
+		Ok(match self.comment_thread.as_ref() {
+			Some(thread_id) => {
+				Some(comment::getThread_impl(context, comment::GetThreadParameters {
+					thread_id: thread_id.to_string()
+				}).await?)
+			},
+			None => None
+		})
 	}
 }
 
