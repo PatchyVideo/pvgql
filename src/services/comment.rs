@@ -48,7 +48,7 @@ impl Comment {
 	pub fn content(&self) -> Option<String> {
 		self.content.as_ref().map_or(None, |s| if s.len() == 0 {None} else {Some(s.clone())})
 	}
-	pub fn chidlren(&self) -> Option<Vec<Comment>> {
+	pub fn children(&self) -> Option<Vec<Comment>> {
 		match self.children.as_ref() {
 			Some(c) => {
 				if c.len() > 0 {
