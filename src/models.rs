@@ -1,5 +1,6 @@
 
 extern crate serde_json;
+use md5::{Md5, Digest};
 
 use juniper::{
 	graphql_interface,
@@ -66,6 +67,14 @@ impl User {
 	}
 	pub fn meta(&self) -> &Meta {
 		&self.meta
+	}
+	pub fn gravatar(&self) -> Option<String> {
+		self.email.as_ref().map(|email| {
+			let mut hasher = Md5::new();
+			hasher.update(email.trim().to_lowercase().as_bytes());
+			let result = hasher.finalize();
+			hex::encode(result.as_slice())
+		})
 	}
 }
 
