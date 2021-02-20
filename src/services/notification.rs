@@ -1,7 +1,7 @@
 use juniper::{graphql_value};
 use std::collections::{BTreeMap, HashMap};
 
-use crate::{common::*, context::Context, models::Subscription};
+use crate::{common::*, context::Context, services::subscription::Subscription};
 use juniper::{
 	graphql_interface,
 	GraphQLObject,

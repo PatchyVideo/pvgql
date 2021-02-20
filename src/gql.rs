@@ -44,7 +44,7 @@ impl Query {
 	// ------------------------------------------------
 	//     authorDB
 	// ------------------------------------------------
-	pub async fn getAuthor(context: &Context, para: authorDB::GetAuthorParameters) -> FieldResult<models::Author> {
+	pub async fn getAuthor(context: &Context, para: authorDB::GetAuthorParameters) -> FieldResult<authorDB::Author> {
 		authorDB::getAuthor_impl(context, para).await
 	}
 	// ------------------------------------------------
@@ -74,7 +74,7 @@ impl Query {
 	// ------------------------------------------------
 	//     subscriptions
 	// ------------------------------------------------
-	pub async fn listSubscriptions(context: &Context) -> FieldResult<Vec<models::Subscription>> {
+	pub async fn listSubscriptions(context: &Context) -> FieldResult<Vec<subscription::Subscription>> {
 		subscription::listSubscriptions_impl(context).await
 	}
 	pub async fn listSubscriptionVideos(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
