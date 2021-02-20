@@ -212,7 +212,7 @@ pub struct VideoItem {
 	pub cover_image: String,
 	pub title: String,
 	pub desc: String,
-	pub placeholder: bool,
+	pub placeholder: Option<bool>,
 	pub rating: f64,
 	pub repost_type: String,
 	pub copies: Vec<ObjectId>,
@@ -239,7 +239,7 @@ impl VideoItem {
 	pub fn desc(&self) -> &String {
 		&self.desc
 	}
-	pub fn placeholder(&self) -> &bool {
+	pub fn placeholder(&self) -> &Option<bool> {
 		&self.placeholder
 	}
 	pub fn rating(&self) -> &f64 {
