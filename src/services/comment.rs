@@ -12,7 +12,7 @@ use std::convert::{TryFrom, TryInto};
 use crate::models::*;
 use crate::context::Context;
 
-use super::users;
+use super::users::{self, User};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Comment {

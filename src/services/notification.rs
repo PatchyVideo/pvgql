@@ -17,7 +17,7 @@ use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
 
-use crate::models::{User};
+use crate::services::users::{User};
 use crate::services::users;
 
 #[derive(GraphQLObject, Clone)]

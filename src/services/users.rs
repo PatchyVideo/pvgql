@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use juniper::FieldResult;
 
-use crate::{common::*, models::User};
+use crate::{common::*};
 
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -12,6 +12,48 @@ use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
 use crate::context::Context;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct User {
+	pub _id: ObjectId,
+	pub bind_qq: Option<bool>,
+	pub desc: String,
+	pub username: String,
+	pub image: String,
+	pub email: Option<String>,
+	pub gravatar: Option<String>,
+	pub meta: Meta
+}
+
+#[juniper::graphql_object(Context = Context)]
+#[graphql(description="User")]
+impl User {
+	pub fn id(&self) -> ObjectId {
+		self._id.clone()
+	}
+	pub fn bind_qq(&self) -> Option<bool> {
+		self.bind_qq
+	}
+	pub fn desc(&self) -> &String {
+		&self.desc
+	}
+	pub fn username(&self) -> &String {
+		&self.username
+	}
+	pub fn image(&self) -> &String {
+		&self.image
+	}
+	pub fn email(&self) -> &Option<String> {
+		&self.email
+	}
+	pub fn gravatar(&self) -> &Option<String> {
+		&self.gravatar
+	}
+	pub fn meta(&self) -> &Meta {
+		&self.meta
+	}
+}
+
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="required parameters for get user", Context = Context)]
@@ -26,7 +68,8 @@ pub struct UserProfile {
 	pub desc: String,
 	pub username: String,
 	pub image: String,
-	pub email: Option<String>
+	pub email: Option<String>,
+	pub gravatar: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -47,7 +90,8 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
             username: r.profile.username,
             email: r.profile.email,
             image: r.profile.image,
-            meta: r.meta
+            meta: r.meta,
+			gravatar: r.profile.gravatar
         })
 	} else {
 		Err(

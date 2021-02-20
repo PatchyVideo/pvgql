@@ -3,7 +3,6 @@ use juniper::{FieldResult, GraphQLSubscriptionValue};
 use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
-use models::{Rating};
 use notification::ListNotificationParameters;
 use subscription::ListSubscriptionVideosParameters;
 use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, subscription}};
@@ -74,7 +73,7 @@ impl Query {
 	// ------------------------------------------------
 	//     users
 	// ------------------------------------------------
-	pub async fn getUser(context: &Context, para: users::GetUserParameters) -> FieldResult<models::User> {
+	pub async fn getUser(context: &Context, para: users::GetUserParameters) -> FieldResult<users::User> {
 		users::getUser_impl(context, para).await
 	}
 	pub async fn whoami(context: &Context) -> FieldResult<String> {
@@ -83,7 +82,7 @@ impl Query {
 	// ------------------------------------------------
 	//     rating
 	// ------------------------------------------------
-	pub async fn getRating(context: &Context, para: rating::GetRatingParameters) -> FieldResult<Option<models::Rating>> {
+	pub async fn getRating(context: &Context, para: rating::GetRatingParameters) -> FieldResult<Option<rating::Rating>> {
 		rating::getRating_impl(context, para).await
 	}
 	// ------------------------------------------------

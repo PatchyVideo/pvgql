@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use juniper::FieldResult;
 
-use crate::{common::*, models::{Rating, User}};
+use crate::{common::*};
 
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -12,6 +12,30 @@ use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
 use crate::context::Context;
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Rating {
+	/// Rating given by current user, null is not logged in or not rated
+	pub user_rating: Option<i32>,
+	/// Sum of ratings
+	pub total_rating: i32,
+	// Num of users rated this item
+	pub total_user: i32,
+}
+
+#[juniper::graphql_object(Context = Context)]
+#[graphql(description="Rating")]
+impl Rating {
+	pub fn user_rating(&self) -> Option<i32> {
+		self.user_rating
+	}
+	pub fn total_rating(&self) -> i32 {
+		self.total_rating
+	}
+	pub fn total_user(&self) -> i32 {
+		self.total_user
+	}
+}
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="required parameters for get user", Context = Context)]

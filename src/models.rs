@@ -16,7 +16,9 @@ use std::{cell::RefMut, fmt};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
-use crate::{context::Context, services::comment::{self, Thread}};
+use crate::{context::Context, services::{comment::{self, Thread}, rating::Rating}};
+
+use crate::services::users::User;
 
 #[path="./custom_scalar.rs"]
 mod custom_scalar;
@@ -31,51 +33,6 @@ pub struct Error {
 pub struct RestResult<T> {
 	pub status: String,
 	pub data: Option<T>
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct User {
-	pub _id: ObjectId,
-	pub bind_qq: Option<bool>,
-	pub desc: String,
-	pub username: String,
-	pub image: String,
-	pub email: Option<String>,
-	pub meta: Meta
-}
-
-#[juniper::graphql_object(Context = Context)]
-#[graphql(description="User")]
-impl User {
-	pub fn id(&self) -> ObjectId {
-		self._id.clone()
-	}
-	pub fn bind_qq(&self) -> Option<bool> {
-		self.bind_qq
-	}
-	pub fn desc(&self) -> &String {
-		&self.desc
-	}
-	pub fn username(&self) -> &String {
-		&self.username
-	}
-	pub fn image(&self) -> &String {
-		&self.image
-	}
-	pub fn email(&self) -> &Option<String> {
-		&self.email
-	}
-	pub fn meta(&self) -> &Meta {
-		&self.meta
-	}
-	pub fn gravatar(&self) -> Option<String> {
-		self.email.as_ref().map(|email| {
-			let mut hasher = Md5::new();
-			hasher.update(email.trim().to_lowercase().as_bytes());
-			let result = hasher.finalize();
-			hex::encode(result.as_slice())
-		})
-	}
 }
 
 use serde::de::IntoDeserializer;
@@ -808,30 +765,6 @@ impl Author {
 	}
 	pub async fn desc(&self) -> &String {
 		&self.desc
-	}
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Rating {
-	/// Rating given by current user, null is not logged in or not rated
-	pub user_rating: Option<i32>,
-	/// Sum of ratings
-	pub total_rating: i32,
-	// Num of users rated this item
-	pub total_user: i32,
-}
-
-#[juniper::graphql_object(Context = Context)]
-#[graphql(description="Rating")]
-impl Rating {
-	pub fn user_rating(&self) -> Option<i32> {
-		self.user_rating
-	}
-	pub fn total_rating(&self) -> i32 {
-		self.total_rating
-	}
-	pub fn total_user(&self) -> i32 {
-		self.total_user
 	}
 }
 
