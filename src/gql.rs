@@ -9,20 +9,6 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, sub
 use crate::models::Error;
 use juniper::graphql_value;
 
-// use crate::common::PostResult;
-
-// #[path="submit_handler/mod.rs"]
-// mod submit_handler;
-// use submit_handler::{NewCharacterSubmit, NewMusicSubmit, NewWorkSubmit, NewCPSubmit, NewPaperSubmit};
-
-// #[path="result_query/mod.rs"]
-// mod result_query;
-// use result_query::{CharacterRankResult, Reasons, FilterConditions, SingleCharacterResult};
-
-// #[path="user_manager/mod.rs"]
-// mod user_manager;
-// use user_manager::{SendVoteTokenInputs, LoginInputs, LoginResults};
-
 use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating, notification};
 use crate::context::Context;
 
