@@ -87,7 +87,7 @@ pub struct ListSubscriptionVideosParameters {
 	pub offset: Option<i32>,
 	/// Num of item in a page
 	pub limit: Option<i32>,
-	/// List order, one of 'latest', 'oldest', 'video_latest', 'video_oldest'
+	/// List order, one of 'latest', 'oldest', 'video_latest', 'video_oldest', 'last_modified'
 	pub order: Option<String>,
 	// Addtional query constraints
 	pub additional_constraint: Option<String>,

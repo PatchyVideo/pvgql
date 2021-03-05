@@ -25,7 +25,7 @@ pub struct ListVideoParameters {
 	pub query: Option<String>,
 	/// Query type, one of tag, text
 	pub qtype: Option<String>,
-	/// List order, one of 'latest', 'oldest', 'video_latest', 'video_oldest'
+	/// List order, one of 'latest', 'oldest', 'video_latest', 'video_oldest', 'last_modified'
 	pub order: Option<String>,
 	// Addtional query constraints
 	pub additional_constraint: Option<String>,
