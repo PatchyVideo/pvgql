@@ -181,7 +181,9 @@ pub struct VideoItem {
 	pub url: String,
 	pub user_space_urls: Option<Vec<String>>,
 	pub utags: Vec<String>,
-	pub views: i32
+	pub views: i32,
+	pub cid: Option<u64>,
+	pub part_name: Option<String>
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -228,6 +230,12 @@ impl VideoItem {
 	}
 	pub fn views(&self) -> &i32 {
 		&self.views
+	}
+	pub fn cid(&self) -> Option<String> {
+		self.cid.map(|cid| format!("{}", cid))
+	}
+	pub fn part_name(&self) -> &Option<String> {
+		&self.part_name
 	}
 }
 
