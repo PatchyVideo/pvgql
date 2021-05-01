@@ -9,7 +9,7 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, sub
 use crate::models::Error;
 use juniper::graphql_value;
 
-use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating, notification};
+use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating, notification, postvideo};
 use crate::context::Context;
 
 pub struct Query;
@@ -110,7 +110,15 @@ impl Mutation {
 	fn serverDate() -> DateTime<Utc> {
 		Utc::now()
 	}
-
+	// ------------------------------------------------
+	//     postvideo
+	// ------------------------------------------------
+	pub async fn postVideo(context: &Context, para: postvideo::PostVideoRequestData) -> FieldResult<postvideo::PostVideoResult> {
+		postvideo::postVideo_impl(context, para).await
+	}
+	pub async fn batchPostVideo(context: &Context, para: postvideo::BatchPostVideoRequestData) -> FieldResult<postvideo::BatchPostVideoResult> {
+		postvideo::batchPostVideo_impl(context, para).await
+	}
 }
 
 pub struct Subscription;

@@ -30,9 +30,16 @@ pub struct Error {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct RestResultError {
+	pub reason: String,
+	pub aux: Option<String>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RestResult<T> {
 	pub status: String,
-	pub data: Option<T>
+	pub data: Option<T>,
+	pub dataerr: Option<RestResultError>
 }
 
 use serde::de::IntoDeserializer;
