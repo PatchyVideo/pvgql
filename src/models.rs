@@ -2,15 +2,7 @@
 extern crate serde_json;
 use md5::{Md5, Digest};
 
-use juniper::{
-	graphql_interface,
-	GraphQLObject,
-	execute,
-	parser::{ParseError, ScalarToken, Spanning, Token},
-	serde::de,
-	EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
-	Value, Variables,
-};
+use juniper::{EmptyMutation, FieldResult, GraphQLObject, InputValue, Object, ParseScalarResult, RootNode, ScalarValue, Value, Variables, execute, graphql_interface, graphql_value, parser::{ParseError, ScalarToken, Spanning, Token}, serde::de};
 use std::{cell::RefMut, fmt};
 
 use serde_derive::{Serialize, Deserialize};
@@ -170,6 +162,36 @@ impl BsonDateTime {
 	}
 }
 
+#[derive(juniper::GraphQLEnum, Clone, Serialize, Deserialize, PartialEq, Eq, Debug)]
+pub enum TagCategoryEnum {
+	General,
+	Character,
+	Copyright,
+	Author,
+	Meta,
+	Language,
+	Soundtrack
+}
+
+impl TagCategoryEnum {
+	pub fn from_string(cat: &str) -> FieldResult<TagCategoryEnum> {
+		match cat {
+			"General" => Ok(TagCategoryEnum::General),
+			"Character" => Ok(TagCategoryEnum::Character),
+			"Copyright" => Ok(TagCategoryEnum::Copyright),
+			"Author" => Ok(TagCategoryEnum::Author),
+			"Meta" => Ok(TagCategoryEnum::Meta),
+			"Language" => Ok(TagCategoryEnum::Language),
+			"Soundtrack" => Ok(TagCategoryEnum::Soundtrack),
+			_ => Err(juniper::FieldError::new(
+				"unreachable",
+				graphql_value!({
+					"aa"
+				}),
+			))
+		}
+	}
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct VideoItem {
@@ -249,7 +271,7 @@ impl VideoItem {
 #[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
 #[graphql(description="TagCategoryItem")]
 pub struct TagCategoryItem {
-	pub key: String,
+	pub key: TagCategoryEnum,
 	pub value: Vec<String>
 }
 
@@ -351,7 +373,7 @@ impl Playlist {
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == "Author" {
+			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
 				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
@@ -519,7 +541,7 @@ impl Video {
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == "Author" {
+			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
 				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
@@ -607,7 +629,7 @@ pub struct MultilingualMapping {
 pub struct RegularTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
-	pub category: String,
+	pub category: TagCategoryEnum,
 	pub count: i32,
 	pub languages: Vec<MultilingualMapping>,
 	pub alias: Vec<String>,
@@ -620,7 +642,7 @@ pub struct RegularTagObject {
 pub struct AuthorTagObject {
 	pub tagid: i32,
 	pub _id: ObjectId,
-	pub category: String,
+	pub category: TagCategoryEnum,
 	pub count: i32,
 	pub languages: Vec<MultilingualMapping>,
 	pub alias: Vec<String>,
@@ -634,7 +656,7 @@ pub struct AuthorTagObject {
 pub trait TagObject {
 	async fn id(&self) -> ObjectId;
 	async fn tagid(&self) -> i32;
-	async fn category(&self) -> &String;
+	async fn category(&self) -> &TagCategoryEnum;
 	async fn count(&self) -> i32;
 	async fn languages(&self) -> &Vec<MultilingualMapping>;
 	async fn alias(&self) -> &Vec<String>;
@@ -650,7 +672,7 @@ impl TagObject for RegularTagObject {
 	async fn tagid(&self) -> i32 {
 		self.tagid
 	}
-	async fn category(&self) -> &String {
+	async fn category(&self) -> &TagCategoryEnum {
 		&self.category
 	}
 	async fn count(&self) -> i32 {
@@ -678,7 +700,7 @@ impl TagObject for AuthorTagObject {
 	async fn tagid(&self) -> i32 {
 		self.tagid
 	}
-	async fn category(&self) -> &String {
+	async fn category(&self) -> &TagCategoryEnum {
 		&self.category
 	}
 	async fn count(&self) -> i32 {

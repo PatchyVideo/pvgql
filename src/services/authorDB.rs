@@ -53,7 +53,7 @@ impl Author {
 		}).await?;
 		let mut resp = vec![];
 		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == "Author" {
+			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
 				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),

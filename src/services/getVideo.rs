@@ -40,7 +40,7 @@ pub async fn getVideo_impl(context: &Context, para: GetVideoParameters) -> Field
 		let mut catemap: Vec<TagCategoryItem> = vec![];
 		for (k, v) in resp.tag_by_category {
 			catemap.push(TagCategoryItem {
-				key: k,
+				key: TagCategoryEnum::from_string(&k)?,
 				value: v.as_array().unwrap().iter().map(|x: &serde_json::Value| x.as_str().unwrap().into()).collect::<Vec<_>>()
 			});
 		};

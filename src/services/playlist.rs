@@ -4,7 +4,7 @@ use juniper::graphql_value;
 
 use juniper::FieldResult;
 
-use crate::{common::*, models::{Playlist, TagCategoryItem}};
+use crate::{common::*, models::{Playlist, TagCategoryEnum, TagCategoryItem}};
 
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -69,7 +69,7 @@ pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) ->
         let mut catemap: Vec<TagCategoryItem> = vec![];
 		for (k, v) in tag_by_cat {
 			catemap.push(TagCategoryItem {
-				key: k.clone(),
+				key: TagCategoryEnum::from_string(&k)?,
 				value: v.as_array().unwrap().iter().map(|x: &serde_json::Value| x.as_str().unwrap().into()).collect::<Vec<_>>()
 			});
 		};

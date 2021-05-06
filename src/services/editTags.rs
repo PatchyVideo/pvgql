@@ -25,7 +25,7 @@ pub struct GetTagObjectsBatchParameters {
 pub struct TagObjectRespObject {
 	pub id: i32,
 	pub _id: ObjectId,
-	pub category: String,
+	pub category: TagCategoryEnum,
 	pub count: f64,
 	pub languages: serde_json::Map<String, serde_json::Value>,
 	pub alias: Vec<String>,
@@ -108,7 +108,7 @@ impl ListTagsResult {
 	pub async fn tags(&self, context: &Context) -> Vec<TagObjectValue> {
 		let mut result = Vec::new();
 		for tagobj in self.tags.iter() {
-			let ret: TagObjectValue = if tagobj.category == "Author" {
+			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
 				AuthorTagObject {
 					tagid: tagobj.tagid,
 					_id: tagobj._id.clone(),
