@@ -119,8 +119,10 @@ pub struct ListNotificationResult {
 pub struct ListNotificationParameters {
 	pub offset: Option<i32>,
 	pub limit: Option<i32>,
-	// Whether or not to list all notifications, default only list unread
-	pub list_all: Option<bool>
+	/// Whether or not to list all notifications, default only list unread
+	pub list_all: Option<bool>,
+	/// Type of notification to list, one of 'all', 'forum_reply', 'comment_reply', 'system_message', 'dm', 'post_result', default is 'all'
+	pub note_type: Option<String>
 }
 
 pub fn fetch_field<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> FieldResult<&'a serde_json::Value> {
