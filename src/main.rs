@@ -66,5 +66,5 @@ async fn main() -> std::io::Result<()> {
 			.service(web::resource("/playground").route(web::get().to(playground_handler)))
 			.service(web::resource("/graphiql").route(web::get().to(graphiql_handler)))
 	});
-	server.bind("127.0.0.1:5008").unwrap().run().await
+	server.bind("0.0.0.0:5008").unwrap().run().await
 }
