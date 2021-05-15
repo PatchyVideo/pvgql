@@ -298,6 +298,9 @@ impl PlaylistMeta {
 	pub fn title(&self) -> &String {
 		&self.title
 	}
+	pub fn desc(&self) -> &String {
+		&self.desc
+	}
 	pub fn private(&self) -> bool {
 		self.private
 	}
