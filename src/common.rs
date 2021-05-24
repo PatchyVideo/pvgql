@@ -36,7 +36,7 @@ pub struct EmptyJSON {
 pub const BACKEND_URL: &str = "https://thvideo.tv/be";
 
 #[cfg(not(debug_assertions))]
-pub const BACKEND_URL: &str = "http://127.0.0.1:5000";
+pub const BACKEND_URL: &str = "http://patchyvideo-primary-stack_web:5000";
 
 macro_rules! postJSON {
 	($t:ident, $u:expr, $j:expr, $c:ident) => {
