@@ -371,42 +371,9 @@ impl Playlist {
 		}
 	}
 	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
+		editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
-		}).await?;
-		let mut resp = vec![];
-		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
-				AuthorTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
-						Ok(ret) => Some(ret),
-						Err(_) => None
-					},
-					is_author: true,
-					author_role: "author".to_string(),
-					meta: tagobj.meta
-				}.into()
-			} else {
-				RegularTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					is_author: false,
-					meta: tagobj.meta
-				}.into()
-			};
-			resp.push(ret);
-		};
-		Ok(resp)
+		}).await
 	}
 	pub async fn rating(&self, context: &Context) -> FieldResult<Option<Rating>> {
 		let rating = match rating::getRating_impl(context, rating::GetRatingParameters {
@@ -539,42 +506,9 @@ impl Video {
 		}
 	}
 	pub async fn tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
+		editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
-		}).await?;
-		let mut resp = vec![];
-		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
-				AuthorTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.tagid }).await {
-						Ok(ret) => Some(ret),
-						Err(_) => None
-					},
-					is_author: true,
-					author_role: "author".to_string(),
-					meta: tagobj.meta
-				}.into()
-			} else {
-				RegularTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					is_author: false,
-					meta: tagobj.meta
-				}.into()
-			};
-			resp.push(ret);
-		};
-		Ok(resp)
+		}).await
 	}
 	pub async fn copies(&self, context: &Context, lang: String) -> FieldResult<Vec<Video>> {
 		if let Some(copies) = self.copies.clone() {

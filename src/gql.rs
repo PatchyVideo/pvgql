@@ -35,7 +35,7 @@ impl Query {
 	// ------------------------------------------------
 	//     editTags
 	// ------------------------------------------------
-	pub async fn getTagObjects(context: &Context, para: editTags::GetTagObjectsBatchParameters) -> FieldResult<Vec<models::RegularTagObject>> {
+	pub async fn getTagObjects(context: &Context, para: editTags::GetTagObjectsBatchParameters) -> FieldResult<Vec<models::TagObjectValue>> {
 		editTags::getTagObjectsBatch_impl(context, para).await
 	}
 	pub async fn listTagObjects(context: &Context, para: editTags::ListTagParameters) -> FieldResult<editTags::ListTagsResult> {
@@ -123,7 +123,10 @@ impl Mutation {
 	//     editVideo
 	// ------------------------------------------------
 	pub async fn editVideoTags(context: &Context, para: editVideo::EditVideoTagsParameters) -> FieldResult<Vec<models::TagObjectValue>> {
-		editVideo::editVideoTags(context, para).await
+		editVideo::editVideoTags_impl(context, para).await
+	}
+	pub async fn setVideoClearence(context: &Context, para: editVideo::SetVideoClearenceParameters) -> FieldResult<i32> {
+		editVideo::setVideoClearenceVideo_impl(context, para).await
 	}
 }
 

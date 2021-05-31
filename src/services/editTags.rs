@@ -37,7 +37,74 @@ pub struct TagObjectResp {
 	pub tag_objs: Vec<TagObjectRespObject>
 }
 
-pub async fn getTagObjectsBatch_impl(context: &Context, para: GetTagObjectsBatchParameters) -> FieldResult<Vec<RegularTagObject>> {
+pub async fn getTagObjectsBatch_impl(context: &Context, para: GetTagObjectsBatchParameters) -> FieldResult<Vec<TagObjectValue>> {
+	let result = postJSON!(TagObjectResp, format!("{}/tags/get_tag_batch.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let tagobjs = result.data.unwrap().tag_objs;
+		let mut resp = vec![];
+		for tagobj in tagobjs {
+			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
+				AuthorTagObject {
+					tagid: tagobj.id,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: {
+						let mut langmap: Vec<MultilingualMapping> = vec![];
+						for (k, v) in tagobj.languages.clone() {
+							langmap.push(MultilingualMapping {
+								lang: k,
+								value: v.as_str().unwrap().to_string()
+							});
+						};
+						langmap
+					},
+					count: tagobj.count as i32,
+					author: match authorDB::getAuthor_impl(context, authorDB::GetAuthorParameters { tagid: tagobj.id }).await {
+						Ok(ret) => Some(ret),
+						Err(_) => None
+					},
+					is_author: true,
+					author_role: "author".to_string(),
+					meta: tagobj.meta
+				}.into()
+			} else {
+				RegularTagObject {
+					tagid: tagobj.id,
+					_id: tagobj._id.clone(),
+					alias: tagobj.alias.clone(),
+					category: tagobj.category.clone(),
+					languages: {
+						let mut langmap: Vec<MultilingualMapping> = vec![];
+						for (k, v) in tagobj.languages.clone() {
+							langmap.push(MultilingualMapping {
+								lang: k,
+								value: v.as_str().unwrap().to_string()
+							});
+						};
+						langmap
+					},
+					count: tagobj.count as i32,
+					is_author: false,
+					meta: tagobj.meta
+				}.into()
+			};
+			resp.push(ret);
+		};
+		Ok(resp)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+pub async fn getTagObjectsBatchRegular_impl(context: &Context, para: GetTagObjectsBatchParameters) -> FieldResult<Vec<RegularTagObject>> {
 	let result = postJSON!(TagObjectResp, format!("{}/tags/get_tag_batch.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().tag_objs.iter().map(|tagobj| {

@@ -48,42 +48,9 @@ impl Author {
 		&self.common_tagids
 	}
 	pub async fn common_tags(&self, context: &Context) -> FieldResult<Vec<TagObjectValue>> {
-		let tagobjs = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
+		editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 			tagid: self.common_tagids.clone()
-		}).await?;
-		let mut resp = vec![];
-		for tagobj in tagobjs {
-			let ret: TagObjectValue = if tagobj.category == TagCategoryEnum::Author {
-				AuthorTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					author: match getAuthor_impl(context, GetAuthorParameters { tagid: tagobj.tagid }).await {
-						Ok(ret) => Some(ret),
-						Err(_) => None
-					},
-					is_author: true,
-					author_role: "author".to_string(),
-					meta: tagobj.meta
-				}.into()
-			} else {
-				RegularTagObject {
-					tagid: tagobj.tagid,
-					_id: tagobj._id.clone(),
-					alias: tagobj.alias.clone(),
-					category: tagobj.category.clone(),
-					languages: tagobj.languages.clone(),
-					count: tagobj.count,
-					is_author: false,
-					meta: tagobj.meta
-				}.into()
-			};
-			resp.push(ret);
-		};
-		Ok(resp)
+		}).await
 	}
 	pub async fn urls(&self) -> &Vec<String> {
 		&self.urls
