@@ -13,3 +13,4 @@ pub mod comment;
 
 
 pub mod postvideo;
+pub mod editVideo;

@@ -9,7 +9,7 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, sub
 use crate::models::Error;
 use juniper::graphql_value;
 
-use crate::services::{listVideo, getVideo, editTags, authorDB, playlist, users, rating, notification, postvideo};
+use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users};
 use crate::context::Context;
 
 pub struct Query;
@@ -118,6 +118,12 @@ impl Mutation {
 	}
 	pub async fn batchPostVideo(context: &Context, para: postvideo::BatchPostVideoRequestData) -> FieldResult<postvideo::BatchPostVideoResult> {
 		postvideo::batchPostVideo_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     editVideo
+	// ------------------------------------------------
+	pub async fn editVideoTags(context: &Context, para: editVideo::EditVideoTagsParameters) -> FieldResult<Vec<models::TagObjectValue>> {
+		editVideo::editVideoTags(context, para).await
 	}
 }
 
