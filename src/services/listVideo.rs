@@ -1,7 +1,7 @@
 
 
 use juniper::graphql_value;
-
+use juniper::GraphQLObject;
 
 use juniper::FieldResult;
 
@@ -10,6 +10,7 @@ use crate::common::*;
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
+use crate::models::*;
 use std::convert::{TryFrom, TryInto};
 use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
 use crate::context::Context;
@@ -41,11 +42,13 @@ pub struct ListVideoParameters {
 pub struct ListVideoResult {
 	pub videos: Vec<Video>,
 	pub count: i32,
-	pub page_count: i32
+	pub page_count: i32,
+	pub related_tagids: Option<Vec<i64>>,
+	pub tagid_popmap: Option<serde_json::Map<String, serde_json::Value>>
 }
 
 #[juniper::graphql_object(Context = Context)]
-#[juniper::graphql(description="List video result")]
+#[graphql(description="List video result")]
 impl ListVideoResult {
 	pub fn videos(&self) -> &Vec<Video> {
 		&self.videos
@@ -55,6 +58,32 @@ impl ListVideoResult {
 	}
 	pub fn page_count(&self) -> &i32 {
 		&self.page_count
+	}
+	pub async fn related_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagObjectValue>>> {
+		if let Some(tagids) = self.related_tagids.as_ref() {
+			Ok(Some(super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
+				tagid: tagids.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+			}).await?))
+		} else {
+			Ok(None)
+		}
+	}
+	pub async fn popular_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagWithPopularity>>> {
+		// if let Some(tagid_maps) = self.tagid_popmap.as_ref() {
+		// 	let tagids = tagid_maps.keys().map(|k| k.parse::<i64>().unwrap()).collect::<Vec<_>>();
+		// 	let mut tagobjs: Vec<TagObjectValue> = super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
+		// 		tagid: tagids.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+		// 	}).await?;
+		// 	Ok(Some(tagid_maps.values().zip(tagobjs.iter_mut()).map(|(k, v)| {
+		// 		TagWithPopularity {
+		// 			popluarity: k.as_i64().unwrap() as _,
+		// 			tag: *v
+		// 		}
+		// 	}).collect::<Vec<_>>()))
+		// } else {
+		// 	Ok(None)
+		// }
+		Ok(None)
 	}
 }
 
@@ -78,3 +107,4 @@ pub async fn listVideo_impl(context: &Context, para: ListVideoParameters) -> Fie
 		)
 	}
 }
+

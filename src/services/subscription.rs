@@ -10,8 +10,7 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
-use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
-
+use crate::models::*;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Subscription {
@@ -103,11 +102,12 @@ pub struct ListSubscriptionVideosParameters {
 pub struct ListSubscriptionVideosResult {
 	pub videos: Vec<Video>,
 	pub total: i32,
-	pub objs: Vec<Subscription>
+	pub objs: Vec<Subscription>,
+	pub related_tagids: Option<Vec<i64>>
 }
 
 #[juniper::graphql_object(Context = Context)]
-#[juniper::graphql(description="List subscription videos result")]
+#[graphql(description="List subscription videos result")]
 impl ListSubscriptionVideosResult {
 	pub fn videos(&self) -> &Vec<Video> {
 		&self.videos
@@ -118,6 +118,15 @@ impl ListSubscriptionVideosResult {
 	/// Return subscriptions used
 	pub fn subscriptions(&self) -> &Vec<Subscription> {
 		&self.objs
+	}
+	pub async fn related_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagObjectValue>>> {
+		if let Some(tagids) = self.related_tagids.as_ref() {
+			Ok(Some(super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
+				tagid: tagids.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+			}).await?))
+		} else {
+			Ok(None)
+		}
 	}
 }
 

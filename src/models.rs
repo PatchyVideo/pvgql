@@ -656,3 +656,10 @@ impl TagObject for AuthorTagObject {
 		&self.meta
 	}
 }
+
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="Tag with popularity", Context = Context)]
+pub struct TagWithPopularity {
+	pub popluarity: i32,
+	//pub tag: TagObjectValue
+}
