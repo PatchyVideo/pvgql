@@ -5,6 +5,7 @@ use juniper::RootNode;
 use chrono::{DateTime, Utc};
 use notification::ListNotificationParameters;
 use subscription::ListSubscriptionVideosParameters;
+use crate::services::tags::{self, GetPopularTagsParameters, GetPopularTagsResult};
 use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, subscription}};
 use crate::models::Error;
 use juniper::graphql_value;
@@ -94,6 +95,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getThread(context: &Context, para: GetThreadParameters) -> FieldResult<Thread> {
 		comment::getThread_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     tags
+	// ------------------------------------------------
+	pub async fn getPopularTags(context: &Context, para: GetPopularTagsParameters) -> FieldResult<GetPopularTagsResult> {
+		tags::getPopularTags_impl(context, para).await
 	}
 }
 

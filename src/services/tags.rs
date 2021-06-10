@@ -31,21 +31,20 @@ pub struct GetPopularTagsResult {
 #[graphql(description="GetPopularTags result")]
 impl GetPopularTagsResult {
 	pub async fn popular_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagWithPopularity>>> {
-		// if let Some(tagid_maps) = self.tagid_popmap.as_ref() {
-		// 	let tagids = tagid_maps.keys().map(|k| k.parse::<i64>().unwrap()).collect::<Vec<_>>();
-		// 	let mut tagobjs: Vec<TagObjectValue> = super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
-		// 		tagid: tagids.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
-		// 	}).await?;
-		// 	Ok(Some(tagid_maps.values().zip(tagobjs.iter_mut()).map(|(k, v)| {
-		// 		TagWithPopularity {
-		// 			popluarity: k.as_i64().unwrap() as _,
-		// 			tag: *v
-		// 		}
-		// 	}).collect::<Vec<_>>()))
-		// } else {
-		// 	Ok(None)
-		// }
-		Ok(None)
+		if let Some(tagid_maps) = self.tagids_popmap.as_ref() {
+			let tagids = tagid_maps.keys().map(|k| k.parse::<i64>().unwrap()).collect::<Vec<_>>();
+			let mut tagobjs: Vec<TagObjectValue> = super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
+				tagid: tagids.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()
+			}).await?;
+			Ok(Some(tagid_maps.values().zip(tagobjs.iter_mut()).map(|(k, v)| {
+				TagWithPopularity {
+					popluarity: k.as_i64().unwrap() as _,
+					tag: v.clone()
+				}
+			}).collect::<Vec<_>>()))
+		} else {
+			Ok(None)
+		}
 	}
 }
 

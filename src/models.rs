@@ -47,7 +47,7 @@ pub enum MyObjectId {
 impl MyObjectId {
 	pub fn to_oid(&self) -> Option<ObjectId> {
 		match self {
-		    MyObjectId::Oid(o) => {
+			MyObjectId::Oid(o) => {
 				match o.get("$oid") {
 					Some(value) => {
 						match value.as_str() {
@@ -63,7 +63,7 @@ impl MyObjectId {
 					None => None
 				}
 			},
-		    MyObjectId::Str(s) => {
+			MyObjectId::Str(s) => {
 				if s.len() > 0 {
 					match ObjectId::with_string(s) {
 						Ok(oid) => Some(oid),
@@ -657,9 +657,19 @@ impl TagObject for AuthorTagObject {
 	}
 }
 
+impl Clone for TagObjectValue {
+	#[inline]
+	fn clone(&self) -> Self {
+		match self {
+			Self::AuthorTagObject(h) => Self::AuthorTagObject(h.clone()),
+			Self::RegularTagObject(d) => Self::RegularTagObject(d.clone()),
+		}
+	}
+}
+
 #[derive(juniper::GraphQLObject, Clone)]
 #[graphql(description="Tag with popularity", Context = Context)]
 pub struct TagWithPopularity {
 	pub popluarity: i32,
-	//pub tag: TagObjectValue
+	pub tag: TagObjectValue
 }
