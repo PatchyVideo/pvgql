@@ -10,7 +10,7 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, sub
 use crate::models::Error;
 use juniper::graphql_value;
 
-use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users};
+use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users, stats};
 use crate::context::Context;
 
 pub struct Query;
@@ -101,6 +101,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getPopularTags(context: &Context, para: GetPopularTagsParameters) -> FieldResult<GetPopularTagsResult> {
 		tags::getPopularTags_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     stats
+	// ------------------------------------------------
+	pub async fn getStats(context: &Context) -> FieldResult<stats::Stats> {
+		stats::getStats_impl(context).await
 	}
 }
 
