@@ -29,7 +29,7 @@ env_logger = "0.8"
 rand = "0.7"
 
 chrono = { version = "*", features = ["serde"] }
-bson = "1.1.0"
+bson = "1.2.2"
 actix-rt = "*"
 serde = { version = "1.0.59", features = ["derive"] }
 serde_derive = "1.0.59"

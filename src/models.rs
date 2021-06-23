@@ -8,7 +8,7 @@ use std::{cell::RefMut, fmt};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
-use crate::{context::Context, services::{authorDB::Author, comment::{self, Thread}, rating::Rating}};
+use crate::{context::Context, services::{authorDB::Author, comment::{self, Thread}, playlist::ListAdjacentVideosParameters, rating::Rating}};
 
 use crate::services::users::User;
 
@@ -400,6 +400,7 @@ impl Playlist {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PlaylistContentForVideo {
 	pub _id: ObjectId,
+	pub vid: ObjectId,
 	pub item: PlaylistMeta,
 	pub rank: i32,
 	pub next: Option<String>,
@@ -427,6 +428,15 @@ impl PlaylistContentForVideo {
 		}).await?;
 		Ok(playlist_meta)
 	}
+	/// List previous and next K videos
+	pub async fn adjacent_videos(&self, context: &Context, k: Option<i32>) -> FieldResult<Vec<Video>> {
+		Ok(playlist::listAdjacentVideos_impl(context, ListAdjacentVideosParameters {
+			pid: self._id.to_string(),
+			rank: self.rank,
+			k: k
+		}).await?)
+	}
+	/// Next video
 	pub async fn next(&self, context: &Context, lang: String) -> FieldResult<Option<Video>> {
 		Ok(if let Some(vid) = &self.next {
 			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {
@@ -438,6 +448,7 @@ impl PlaylistContentForVideo {
 			None
 		})
 	}
+	/// Previous video
 	pub async fn prev(&self, context: &Context, lang: String) -> FieldResult<Option<Video>> {
 		Ok(if let Some(vid) = &self.prev {
 			let vidobj = getVideo::getVideo_impl(context, getVideo::GetVideoParameters {

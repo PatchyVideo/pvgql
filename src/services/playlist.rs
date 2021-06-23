@@ -179,3 +179,34 @@ pub async fn listPlatylist_impl(context: &Context, para: ListPlaylistParameters)
 	}
 }
 
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
+#[graphql(description="listAdjacentVideos required parameters", Context = Context)]
+pub struct ListAdjacentVideosParameters {
+	/// Playlist ID
+	pub pid: String,
+	/// Rank to find against
+	pub rank: i32,
+	/// k
+	pub k: Option<i32>
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ListAdjacentVideosResult {
+	pub videos: Vec<Video>,
+}
+
+pub async fn listAdjacentVideos_impl(context: &Context, para: ListAdjacentVideosParameters) -> FieldResult<Vec<Video>> {
+	let result = postJSON!(ListAdjacentVideosResult, format!("{}/lists/list_adjacent_videos.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(result.data.unwrap().videos)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
