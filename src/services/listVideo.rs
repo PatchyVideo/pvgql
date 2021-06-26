@@ -44,7 +44,8 @@ pub struct ListVideoResult {
 	pub count: i32,
 	pub page_count: i32,
 	pub related_tagids: Option<Vec<i64>>,
-	pub tagid_popmap: Option<serde_json::Map<String, serde_json::Value>>
+	pub tagid_popmap: Option<serde_json::Map<String, serde_json::Value>>,
+	pub time_used_ms: i32
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -83,6 +84,10 @@ impl ListVideoResult {
 		} else {
 			Ok(None)
 		}
+	}
+	/// Time used to complete this query in ms
+	pub fn time_used_ms(&self) -> i32 {
+		self.time_used_ms
 	}
 }
 
