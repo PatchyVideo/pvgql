@@ -432,8 +432,9 @@ impl PlaylistContentForVideo {
 	pub async fn adjacent_videos(&self, context: &Context, k: Option<i32>) -> FieldResult<Vec<Video>> {
 		Ok(playlist::listAdjacentVideos_impl(context, ListAdjacentVideosParameters {
 			pid: self._id.to_string(),
-			rank: self.rank,
-			k: k
+			rank: Some(self.rank),
+			k: k,
+			vid: None
 		}).await?)
 	}
 	/// Next video

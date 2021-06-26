@@ -185,9 +185,10 @@ pub struct ListAdjacentVideosParameters {
 	/// Playlist ID
 	pub pid: String,
 	/// Rank to find against
-	pub rank: i32,
+	pub rank: Option<i32>,
 	/// k
-	pub k: Option<i32>
+	pub k: Option<i32>,
+	pub vid: Option<String>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
