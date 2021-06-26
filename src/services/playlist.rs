@@ -4,6 +4,7 @@ use juniper::graphql_value;
 
 use juniper::FieldResult;
 
+use crate::models::VideoRank;
 use crate::{common::*, models::{Playlist, TagCategoryEnum, TagCategoryItem}};
 
 use chrono::{DateTime, Utc};
@@ -193,10 +194,10 @@ pub struct ListAdjacentVideosParameters {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ListAdjacentVideosResult {
-	pub videos: Vec<Video>,
+	pub videos: Vec<VideoRank>,
 }
 
-pub async fn listAdjacentVideos_impl(context: &Context, para: ListAdjacentVideosParameters) -> FieldResult<Vec<Video>> {
+pub async fn listAdjacentVideos_impl(context: &Context, para: ListAdjacentVideosParameters) -> FieldResult<Vec<VideoRank>> {
 	let result = postJSON!(ListAdjacentVideosResult, format!("{}/lists/list_adjacent_videos.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().videos)

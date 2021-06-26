@@ -429,7 +429,7 @@ impl PlaylistContentForVideo {
 		Ok(playlist_meta)
 	}
 	/// List previous and next K videos
-	pub async fn adjacent_videos(&self, context: &Context, k: Option<i32>) -> FieldResult<Vec<Video>> {
+	pub async fn adjacent_videos(&self, context: &Context, k: Option<i32>) -> FieldResult<Vec<VideoRank>> {
 		Ok(playlist::listAdjacentVideos_impl(context, ListAdjacentVideosParameters {
 			pid: self._id.to_string(),
 			rank: Some(self.rank),
@@ -464,6 +464,13 @@ impl PlaylistContentForVideo {
 }
 
 use crate::services::{authorDB, editTags, getVideo, playlist, rating, users};
+
+#[derive(juniper::GraphQLObject, Clone, Serialize, Deserialize)]
+#[graphql(description="VideoRank", Context = Context)]
+pub struct VideoRank {
+	pub video: Video,
+	pub rank: i32
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Video {
