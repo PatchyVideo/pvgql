@@ -57,6 +57,9 @@ impl Query {
 	pub async fn listPlaylist(context: &Context, para: playlist::ListPlaylistParameters) -> FieldResult<playlist::ListPlaylistResult> {
 		playlist::listPlatylist_impl(context, para).await
 	}
+	pub async fn listAdjacentVideos(context: &Context, para: playlist::ListAdjacentVideosParameters) -> FieldResult<Vec<models::Video>> {
+		playlist::listAdjacentVideos_impl(context, para).await
+	}
 	// ------------------------------------------------
 	//     users
 	// ------------------------------------------------
