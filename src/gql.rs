@@ -33,6 +33,9 @@ impl Query {
 	pub async fn getVideo(context: &Context, para: getVideo::GetVideoParameters) -> FieldResult<models::Video> {
 		getVideo::getVideo_impl(context, para).await
 	}
+	pub async fn getRelatedVideo(context: &Context, para: getVideo::GetRelatedVideoParameters) -> FieldResult<Vec<models::Video>> {
+		getVideo::getRelatedVideo_impl(context, para).await
+	}
 	// ------------------------------------------------
 	//     editTags
 	// ------------------------------------------------

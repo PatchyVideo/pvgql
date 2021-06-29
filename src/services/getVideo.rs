@@ -58,6 +58,35 @@ pub async fn getVideo_impl(context: &Context, para: GetVideoParameters) -> Field
 	}
 }
 
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
+#[graphql(description="GetRelatedVideo required parameters", Context = Context)]
+pub struct GetRelatedVideoParameters {
+	pub vid: String,
+    pub top_k: Option<i32>,
+    pub sort_title: Option<bool>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetRelatedVideoPesponse {
+	pub videos: Vec<Video>
+}
+
+pub async fn getRelatedVideo_impl(context: &Context, para: GetRelatedVideoParameters) -> FieldResult<Vec<Video>> {
+	let result = postJSON!(GetRelatedVideoPesponse, format!("{}/get_related_videos.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(result.data.unwrap().videos)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
 #[test]
 fn untyped_example() -> Result<(), Box<dyn std::error::Error>> {
 	use serde_json;

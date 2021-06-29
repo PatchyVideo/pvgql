@@ -15,7 +15,7 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
-use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
+use crate::models::{Meta, Error, RestResult, Video, VideoItem};
 
 use crate::services::users::{User};
 use crate::services::users;
@@ -25,7 +25,7 @@ use crate::services::users;
 pub struct ReplyNotificationObject {
 	pub _id: ObjectId,
 	pub type_: String,
-	pub time: DateTime<chrono::Utc>,
+	pub time: bson::DateTime,
 	pub read: bool,
 	pub content: String,
 	pub replied_by: User,
@@ -42,7 +42,7 @@ pub struct ReplyNotificationObject {
 pub struct BaseNotificationObject {
 	pub _id: ObjectId,
 	pub type_: String,
-	pub time: DateTime<chrono::Utc>,
+	pub time: bson::DateTime,
 	pub read: bool,
 }
 
@@ -54,7 +54,7 @@ pub trait NotificationObject {
 		name = "type"
 	)]
 	async fn type_(&self) -> &String;
-	async fn time(&self) -> &DateTime<chrono::Utc>;
+	async fn time(&self) -> &bson::DateTime;
 	/// If this notification has been read
 	async fn read(&self) -> bool;
 }
@@ -69,7 +69,7 @@ impl NotificationObject for ReplyNotificationObject {
 		&self.type_
 	}
 
-	async fn time(&self) -> &DateTime<Utc> {
+	async fn time(&self) -> &bson::DateTime {
 		&self.time
 	}
 
@@ -88,7 +88,7 @@ impl NotificationObject for BaseNotificationObject {
 		&self.type_
 	}
 
-	async fn time(&self) -> &DateTime<Utc> {
+	async fn time(&self) -> &bson::DateTime {
 		&self.time
 	}
 
@@ -102,7 +102,7 @@ pub struct SingleNotificationResult {
 	pub _id: ObjectId,
 	#[serde(rename = "type")]
 	pub type_: String,
-	pub time: BsonDateTime,
+	pub time: bson::DateTime,
 	pub read: bool,
 	pub to: ObjectId,
 	#[serde(flatten)]
@@ -170,7 +170,7 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 					_id: note._id,
 					type_: note.type_,
 					read: note.read,
-					time: note.time.to_UtcDateTime(),
+					time: note.time,
 					replied_by: replied_by,
 					replied_obj: replied_obj,
 					replied_type: replied_type,
@@ -182,7 +182,7 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 					_id: note._id,
 					type_: note.type_,
 					read: note.read,
-					time: note.time.to_UtcDateTime()
+					time: note.time
 				}.into()
 			};
 			result_list.push(item);

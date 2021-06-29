@@ -12,7 +12,7 @@ use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use crate::models::*;
 use std::convert::{TryFrom, TryInto};
-use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, VideoItem};
+use crate::models::{Meta, Error, RestResult, Video, VideoItem};
 use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]

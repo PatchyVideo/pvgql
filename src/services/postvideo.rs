@@ -9,7 +9,7 @@ use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
 use bson::oid::ObjectId;
 use std::convert::{TryFrom, TryInto};
-use crate::models::{Meta, Error, RestResult, BsonDateTime, Video, PlaylistMeta};
+use crate::models::{Meta, Error, RestResult, Video, PlaylistMeta};
 use crate::context::Context;
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
