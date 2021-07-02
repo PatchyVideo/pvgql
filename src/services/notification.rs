@@ -109,9 +109,28 @@ pub struct SingleNotificationResult {
 	pub other: std::collections::HashMap<String, serde_json::Value>
 }
 
+impl Clone for NotificationObjectValue {
+	#[inline]
+	fn clone(&self) -> Self {
+		match self {
+			Self::BaseNotificationObject(h) => Self::BaseNotificationObject(h.clone()),
+			Self::ReplyNotificationObject(d) => Self::ReplyNotificationObject(d.clone()),
+		}
+	}
+}
+
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ListNotificationResult {
-	pub notes: Vec<SingleNotificationResult>
+	pub notes: Vec<SingleNotificationResult>,
+	pub count: i32
+}
+
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="list notifications result", Context = Context)]
+pub struct ListNotificationGQLResult {
+	pub notes: Vec<NotificationObjectValue>,
+	pub count: i32
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
@@ -146,7 +165,7 @@ pub fn value_to_oid(val: &serde_json::Value) -> Option<ObjectId> {
 	}
 }
 
-pub async fn listNotification_impl(context: &Context, para: ListNotificationParameters) -> FieldResult<Vec<NotificationObjectValue>> {
+pub async fn listNotification_impl(context: &Context, para: ListNotificationParameters) -> FieldResult<ListNotificationGQLResult> {
 	let list_all = para.list_all.map_or(false, |f| f);
 	let result = if list_all {
 		postJSON!(ListNotificationResult, format!("{}/notes/list_all.do'", BACKEND_URL), para, context)
@@ -187,7 +206,7 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 			};
 			result_list.push(item);
 		};
-		Ok(result_list)
+		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count })
 	} else {
 		Err(
 			juniper::FieldError::new(

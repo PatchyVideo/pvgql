@@ -93,7 +93,7 @@ impl Query {
 	// ------------------------------------------------
 	//     notification
 	// ------------------------------------------------
-	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<Vec<notification::NotificationObjectValue>> {
+	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<notification::ListNotificationGQLResult> {
 		notification::listNotification_impl(context, para).await
 	}
 	// ------------------------------------------------
