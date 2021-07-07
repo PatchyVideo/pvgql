@@ -168,9 +168,9 @@ pub fn value_to_oid(val: &serde_json::Value) -> Option<ObjectId> {
 pub async fn listNotification_impl(context: &Context, para: ListNotificationParameters) -> FieldResult<ListNotificationGQLResult> {
 	let list_all = para.list_all.map_or(false, |f| f);
 	let result = if list_all {
-		postJSON!(ListNotificationResult, format!("{}/notes/list_all.do'", BACKEND_URL), para, context)
+		postJSON!(ListNotificationResult, format!("{}/notes/list_all.do", BACKEND_URL), para, context)
 	} else {
-		postJSON!(ListNotificationResult, format!("{}/notes/list_unread.do'", BACKEND_URL), para, context)
+		postJSON!(ListNotificationResult, format!("{}/notes/list_unread.do", BACKEND_URL), para, context)
 	};
 	if result.status == "SUCCEED" {
 		let ret = result.data.unwrap();
