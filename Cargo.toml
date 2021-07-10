@@ -6,19 +6,13 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-
 [dependencies]
 derive_more = "0.99.7"
 futures = "0.3.1"
 async-trait = "0.1.39"
 serde_json = { version = "1" }
 fnv = "1.0.3"
-tokio = { version = "0.2", features = ["rt-core", "time", "macros"] }
+tokio = {version = "1.8.1", features = ["rt-multi-thread", "macros"]}
 
 juniper = { git = "https://github.com/graphql-rust/juniper",features = ["expose-test-schema", "serde_json"] }
 juniper_graphql_ws = { git = "https://github.com/graphql-rust/juniper" }
@@ -26,15 +20,23 @@ juniper_actix = { git = "https://github.com/graphql-rust/juniper", features = ["
 actix-web = "3.3"
 actix-cors = "0.5"
 env_logger = "0.8"
-rand = "0.7"
+rand = "0.8.4"
 
 chrono = { version = "*", features = ["serde"] }
 bson = "1.2.2"
-actix-rt = "*"
+actix-rt = "2.2.0"
 serde = { version = "1.0.59", features = ["derive"] }
 serde_derive = "1.0.59"
-#juniper = {version = "0.14.2", features = ["chrono"] }
-reqwest = { version = "0.10.7", features = ["blocking", "json"] }
-extend = "*"
+reqwest = { version = "0.11.4", features = ["blocking", "json"] }
+extend = "1.1.0"
 md-5 = "0.9.1"
-hex = "*"
+hex = "0.4.3"
+
+[profile.release]
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'abort'
+incremental = false
