@@ -13,7 +13,7 @@ use std::convert::{TryFrom, TryInto};
 use crate::models::*;
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct Subscription {
+pub struct PVSubscription {
 	pub _id: ObjectId,
 	/// Query
 	pub qs: String,
@@ -25,8 +25,8 @@ pub struct Subscription {
 }
 
 #[juniper::graphql_object(Context = Context)]
-#[graphql(description="Subscription")]
-impl Subscription {
+#[graphql(description="PVSubscription")]
+impl PVSubscription {
 	pub async fn id(&self) -> ObjectId {
 		self._id.clone()
 	}
@@ -60,10 +60,10 @@ impl Subscription {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ListAllSubscriptionResult {
-	pub subs: Vec<Subscription>
+	pub subs: Vec<PVSubscription>
 }
 
-pub async fn listSubscriptions_impl(context: &Context) -> FieldResult<Vec<Subscription>> {
+pub async fn listSubscriptions_impl(context: &Context) -> FieldResult<Vec<PVSubscription>> {
 	let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON {}, context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().subs)
@@ -102,7 +102,7 @@ pub struct ListSubscriptionVideosParameters {
 pub struct ListSubscriptionVideosResult {
 	pub videos: Vec<Video>,
 	pub total: i32,
-	pub objs: Vec<Subscription>,
+	pub objs: Vec<PVSubscription>,
 	pub related_tagids: Option<Vec<i64>>
 }
 
@@ -116,7 +116,7 @@ impl ListSubscriptionVideosResult {
 		&self.total
 	}
 	/// Return subscriptions used
-	pub fn subscriptions(&self) -> &Vec<Subscription> {
+	pub fn subscriptions(&self) -> &Vec<PVSubscription> {
 		&self.objs
 	}
 	pub async fn related_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagObjectValue>>> {
