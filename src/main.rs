@@ -2,15 +2,8 @@
 
 extern crate juniper;
 
-use std::io;
-use std::sync::Arc;
-use std::env;
-
-use actix_cors::Cors;
 use actix_web::{App, Error, HttpMessage, HttpResponse, HttpServer, client::ClientBuilder, cookie, middleware, web};
 use context::Context;
-use juniper::http::graphiql::graphiql_source;
-use juniper::http::GraphQLRequest;
 use juniper_actix::{
 	graphiql_handler as gqli_handler, graphql_handler, playground_handler as play_handler,
 };
@@ -22,9 +15,6 @@ mod models;
 mod common;
 mod gql;
 mod services;
-//mod custom_scalar;
-
-use std::os::raw::*;
 
 
 use crate::gql::{create_schema, Schema};

@@ -4,12 +4,7 @@ use std::collections::{BTreeMap, HashMap};
 use crate::{common::*, context::Context, services::subscription::Subscription};
 use juniper::{
 	graphql_interface,
-	GraphQLObject,
-	execute,
-	parser::{ParseError, ScalarToken, Spanning, Token},
-	serde::de,
-	EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
-	Value, Variables,
+	GraphQLObject, FieldResult
 };
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -145,7 +140,7 @@ pub struct ListNotificationParameters {
 }
 
 pub fn fetch_field<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> FieldResult<&'a serde_json::Value> {
-	Ok(map.get(val).ok_or(juniper::FieldError::new("INTERNAL_SERVER_ERROR", graphql_value!({format!("Missing field '{}'", val)})))?)
+	Ok(map.get(val).ok_or(juniper::FieldError::new("INTERNAL_SERVER_ERROR", graphql_value!(format!("Missing field '{}'", val))))?)
 }
 
 pub fn value_to_oid(val: &serde_json::Value) -> Option<ObjectId> {
