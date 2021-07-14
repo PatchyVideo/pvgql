@@ -41,7 +41,19 @@ pub struct BaseNotificationObject {
 	pub read: bool,
 }
 
-#[graphql_interface(for = [ReplyNotificationObject, BaseNotificationObject], Context = Context)] // enumerating all implementers is mandatory 
+#[derive(GraphQLObject, Clone)]
+#[graphql(description="system NotificationObject", impl = NotificationObjectValue, Context = Context)]
+pub struct SystemNotificationObject {
+	pub _id: ObjectId,
+	pub type_: String,
+	pub time: bson::DateTime,
+	pub read: bool,
+	pub content: String,
+	pub title: String,
+	pub related_link: Option<String>
+}
+
+#[graphql_interface(for = [ReplyNotificationObject, BaseNotificationObject, SystemNotificationObject], Context = Context)] // enumerating all implementers is mandatory 
 pub trait NotificationObject {
 	async fn id(&self) -> &ObjectId;
 	#[graphql(
@@ -92,6 +104,25 @@ impl NotificationObject for BaseNotificationObject {
 	}
 }
 
+#[juniper::graphql_interface]
+impl NotificationObject for SystemNotificationObject {
+	async fn id(&self) -> &ObjectId {
+		&self._id
+	}
+
+	async fn type_(&self) -> &String {
+		&self.type_
+	}
+
+	async fn time(&self) -> &bson::DateTime {
+		&self.time
+	}
+
+	async fn read(&self) -> bool {
+		self.read
+	}
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SingleNotificationResult {
 	pub _id: ObjectId,
@@ -108,8 +139,9 @@ impl Clone for NotificationObjectValue {
 	#[inline]
 	fn clone(&self) -> Self {
 		match self {
-			Self::BaseNotificationObject(h) => Self::BaseNotificationObject(h.clone()),
+			Self::BaseNotificationObject(d) => Self::BaseNotificationObject(d.clone()),
 			Self::ReplyNotificationObject(d) => Self::ReplyNotificationObject(d.clone()),
+			Self::SystemNotificationObject(d) => Self::SystemNotificationObject(d.clone()),
 		}
 	}
 }
@@ -141,6 +173,10 @@ pub struct ListNotificationParameters {
 
 pub fn fetch_field<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> FieldResult<&'a serde_json::Value> {
 	Ok(map.get(val).ok_or(juniper::FieldError::new("INTERNAL_SERVER_ERROR", graphql_value!(format!("Missing field '{}'", val))))?)
+}
+
+pub fn fetch_field_opt<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> Option<&'a serde_json::Value> {
+	map.get(val)
 }
 
 pub fn value_to_oid(val: &serde_json::Value) -> Option<ObjectId> {
@@ -190,6 +226,19 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 					replied_type: replied_type,
 					content: content,
 					cid: cid
+				}.into()
+			} else if note.type_ == "system_message" {
+				let content = fetch_field(&note.other, "content")?.as_str().unwrap().to_string();
+				let title = fetch_field(&note.other, "title")?.as_str().unwrap().to_string();
+				let related_link = fetch_field_opt(&note.other, "related_link").map(|o| o.as_str().unwrap().to_string());
+				SystemNotificationObject {
+					_id: note._id,
+					type_: note.type_,
+					read: note.read,
+					time: note.time,
+					title: title,
+					content: content,
+					related_link: related_link
 				}.into()
 			} else {
 				BaseNotificationObject {
