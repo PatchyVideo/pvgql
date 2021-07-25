@@ -26,7 +26,8 @@ pub struct Comment {
 	pub pinned: bool,
 	pub upvotes: i32,
 	pub downvotes: i32,
-	pub meta: Meta
+	pub meta: Meta,
+	pub edited: Option<bool>
 }
 
 #[juniper::graphql_object(Context = Context)]
@@ -77,6 +78,9 @@ impl Comment {
 	}
 	pub fn downvotes(&self) -> i32 {
 		self.downvotes
+	}
+	pub fn edited(&self) -> bool {
+		self.edited.unwrap_or_default()
 	}
 	pub fn meta(&self) -> &Meta {
 		&self.meta

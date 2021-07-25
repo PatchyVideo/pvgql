@@ -150,14 +150,20 @@ impl Clone for NotificationObjectValue {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ListNotificationResult {
 	pub notes: Vec<SingleNotificationResult>,
-	pub count: i32
+	pub count: i32,
+	pub count_unread: i32,
+	pub count_all: i32,
+	pub page_count: Option<i32>
 }
 
 #[derive(juniper::GraphQLObject, Clone)]
 #[graphql(description="list notifications result", Context = Context)]
 pub struct ListNotificationGQLResult {
 	pub notes: Vec<NotificationObjectValue>,
-	pub count: i32
+	pub count: i32,
+	pub count_unread: i32,
+	pub count_all: i32,
+	pub page_count: Option<i32>
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
@@ -250,7 +256,7 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 			};
 			result_list.push(item);
 		};
-		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count })
+		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count, count_all: ret.count_all, count_unread: ret.count_unread, page_count: ret.page_count })
 	} else {
 		Err(
 			juniper::FieldError::new(
