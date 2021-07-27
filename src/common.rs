@@ -33,7 +33,7 @@ pub struct EmptyJSON {
 }
 
 #[cfg(debug_assertions)]
-pub const BACKEND_URL: &str = "https://thvideo.tv/be";
+pub const BACKEND_URL: &str = "https://patchyvideo.com/be";
 
 #[cfg(not(debug_assertions))]
 pub const BACKEND_URL: &str = "http://patchyvideo-primary-stack_web:5000";
