@@ -4,9 +4,9 @@ use juniper::RootNode;
 
 use chrono::{DateTime, Utc};
 use notification::ListNotificationParameters;
-use subscription::ListSubscriptionVideosParameters;
+use pvsubscription::ListSubscriptionVideosParameters;
 use crate::services::tags::{self, GetPopularTagsParameters, GetPopularTagsResult};
-use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, subscription}};
+use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, pvsubscription}};
 use crate::models::Error;
 use juniper::graphql_value;
 
@@ -81,20 +81,23 @@ impl Query {
 	// ------------------------------------------------
 	//     subscriptions
 	// ------------------------------------------------
-	pub async fn listSubscriptions(context: &Context) -> FieldResult<Vec<subscription::Subscription>> {
-		subscription::listSubscriptions_impl(context).await
+	pub async fn listSubscriptions(context: &Context) -> FieldResult<Vec<pvsubscription::PVSubscription>> {
+		pvsubscription::listSubscriptions_impl(context).await
 	}
-	pub async fn listSubscriptionVideos(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
-		subscription::listSubscriptionVideos_impl(context, para).await
+	pub async fn listSubscriptionVideos(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<pvsubscription::ListSubscriptionVideosResult> {
+		pvsubscription::listSubscriptionVideos_impl(context, para).await
 	}
-	pub async fn listSubscriptionVideosRandomized(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<subscription::ListSubscriptionVideosResult> {
-		subscription::listSubscriptionVideosRandomized_impl(context, para).await
+	pub async fn listSubscriptionVideosRandomized(context: &Context, para: ListSubscriptionVideosParameters) -> FieldResult<pvsubscription::ListSubscriptionVideosResult> {
+		pvsubscription::listSubscriptionVideosRandomized_impl(context, para).await
 	}
 	// ------------------------------------------------
 	//     notification
 	// ------------------------------------------------
 	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<notification::ListNotificationGQLResult> {
 		notification::listNotification_impl(context, para).await
+	}
+	pub async fn listUnreadNotificationsCount(context: &Context) -> FieldResult<notification::ListUnreadNotificationCountGQLResult> {
+		notification::listUnreadNotificationCount_impl(context).await
 	}
 	// ------------------------------------------------
 	//     comment

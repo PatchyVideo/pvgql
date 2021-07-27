@@ -1,15 +1,10 @@
 use juniper::{graphql_value};
 use std::collections::{BTreeMap, HashMap};
 
-use crate::{common::*, context::Context, services::subscription::Subscription};
+use crate::{common::*, context::Context, services::pvsubscription::PVSubscription};
 use juniper::{
 	graphql_interface,
-	GraphQLObject,
-	execute,
-	parser::{ParseError, ScalarToken, Spanning, Token},
-	serde::de,
-	EmptyMutation, FieldResult, InputValue, Object, ParseScalarResult, RootNode, ScalarValue,
-	Value, Variables,
+	GraphQLObject, FieldResult
 };
 use chrono::{DateTime, Utc};
 use serde_derive::{Serialize, Deserialize};
@@ -46,7 +41,19 @@ pub struct BaseNotificationObject {
 	pub read: bool,
 }
 
-#[graphql_interface(for = [ReplyNotificationObject, BaseNotificationObject], Context = Context)] // enumerating all implementers is mandatory 
+#[derive(GraphQLObject, Clone)]
+#[graphql(description="system NotificationObject", impl = NotificationObjectValue, Context = Context)]
+pub struct SystemNotificationObject {
+	pub _id: ObjectId,
+	pub type_: String,
+	pub time: bson::DateTime,
+	pub read: bool,
+	pub content: String,
+	pub title: String,
+	pub related_link: Option<String>
+}
+
+#[graphql_interface(for = [ReplyNotificationObject, BaseNotificationObject, SystemNotificationObject], Context = Context)] // enumerating all implementers is mandatory 
 pub trait NotificationObject {
 	async fn id(&self) -> &ObjectId;
 	#[graphql(
@@ -97,6 +104,25 @@ impl NotificationObject for BaseNotificationObject {
 	}
 }
 
+#[juniper::graphql_interface]
+impl NotificationObject for SystemNotificationObject {
+	async fn id(&self) -> &ObjectId {
+		&self._id
+	}
+
+	async fn type_(&self) -> &String {
+		&self.type_
+	}
+
+	async fn time(&self) -> &bson::DateTime {
+		&self.time
+	}
+
+	async fn read(&self) -> bool {
+		self.read
+	}
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SingleNotificationResult {
 	pub _id: ObjectId,
@@ -113,8 +139,9 @@ impl Clone for NotificationObjectValue {
 	#[inline]
 	fn clone(&self) -> Self {
 		match self {
-			Self::BaseNotificationObject(h) => Self::BaseNotificationObject(h.clone()),
+			Self::BaseNotificationObject(d) => Self::BaseNotificationObject(d.clone()),
 			Self::ReplyNotificationObject(d) => Self::ReplyNotificationObject(d.clone()),
+			Self::SystemNotificationObject(d) => Self::SystemNotificationObject(d.clone()),
 		}
 	}
 }
@@ -123,13 +150,34 @@ impl Clone for NotificationObjectValue {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ListNotificationResult {
 	pub notes: Vec<SingleNotificationResult>,
-	pub count: i32
+	pub count: i32,
+	pub count_unread: i32,
+	pub count_all: i32,
+	pub page_count: Option<i32>
 }
 
 #[derive(juniper::GraphQLObject, Clone)]
 #[graphql(description="list notifications result", Context = Context)]
 pub struct ListNotificationGQLResult {
 	pub notes: Vec<NotificationObjectValue>,
+	pub count: i32,
+	pub count_unread: i32,
+	pub count_all: i32,
+	pub page_count: Option<i32>
+}
+
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="list unread notifications count result", Context = Context)]
+pub struct ListUnreadNotificationCountGQLResult {
+	pub list: Vec<ListUnreadNotificationCountGQLResultItem>
+}
+
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="list unread notifications count result item", Context = Context)]
+pub struct ListUnreadNotificationCountGQLResultItem {
+	/// Note message type
+	pub msgtype: String,
+	/// Number of unread note messages of this type
 	pub count: i32
 }
 
@@ -145,7 +193,11 @@ pub struct ListNotificationParameters {
 }
 
 pub fn fetch_field<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> FieldResult<&'a serde_json::Value> {
-	Ok(map.get(val).ok_or(juniper::FieldError::new("INTERNAL_SERVER_ERROR", graphql_value!({format!("Missing field '{}'", val)})))?)
+	Ok(map.get(val).ok_or(juniper::FieldError::new("INTERNAL_SERVER_ERROR", graphql_value!(format!("Missing field '{}'", val))))?)
+}
+
+pub fn fetch_field_opt<'a>(map: &'a HashMap<String, serde_json::Value>, val: &str) -> Option<&'a serde_json::Value> {
+	map.get(val)
 }
 
 pub fn value_to_oid(val: &serde_json::Value) -> Option<ObjectId> {
@@ -196,6 +248,19 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 					content: content,
 					cid: cid
 				}.into()
+			} else if note.type_ == "system_message" {
+				let content = fetch_field(&note.other, "content")?.as_str().unwrap().to_string();
+				let title = fetch_field(&note.other, "title")?.as_str().unwrap().to_string();
+				let related_link = fetch_field_opt(&note.other, "related_link").map(|o| o.as_str().unwrap().to_string());
+				SystemNotificationObject {
+					_id: note._id,
+					type_: note.type_,
+					read: note.read,
+					time: note.time,
+					title: title,
+					content: content,
+					related_link: related_link
+				}.into()
 			} else {
 				BaseNotificationObject {
 					_id: note._id,
@@ -206,7 +271,45 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 			};
 			result_list.push(item);
 		};
-		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count })
+		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count, count_all: ret.count_all, count_unread: ret.count_unread, page_count: ret.page_count })
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+pub async fn listUnreadNotificationCount_impl(context: &Context) -> FieldResult<ListUnreadNotificationCountGQLResult> {
+	let para = ListNotificationParameters {
+		offset: None,
+		limit: None,
+		list_all: None,
+		note_type: None,
+	};
+	let result = postJSON!(ListNotificationResult, format!("{}/notes/list_unread.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let ret = result.data.unwrap();
+		let mut result_list = Vec::new();
+		let mut countmap = HashMap::new();
+		for note in ret.notes {
+			if let Some(item) = countmap.get_mut(&note.type_) {
+				*item += 1;
+			} else {
+				countmap.insert(note.type_, 0i32);
+			}
+		};
+		for (k, v) in countmap.iter() {
+			result_list.push(ListUnreadNotificationCountGQLResultItem {
+				msgtype: k.clone(),
+				count: *v
+			});
+		}
+		Ok(ListUnreadNotificationCountGQLResult { list: result_list })
 	} else {
 		Err(
 			juniper::FieldError::new(
