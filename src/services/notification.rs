@@ -166,6 +166,21 @@ pub struct ListNotificationGQLResult {
 	pub page_count: Option<i32>
 }
 
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="list unread notifications count result", Context = Context)]
+pub struct ListUnreadNotificationCountGQLResult {
+	pub list: Vec<ListUnreadNotificationCountGQLResultItem>
+}
+
+#[derive(juniper::GraphQLObject, Clone)]
+#[graphql(description="list unread notifications count result item", Context = Context)]
+pub struct ListUnreadNotificationCountGQLResultItem {
+	/// Note message type
+	pub msgtype: String,
+	/// Number of unread note messages of this type
+	pub count: i32
+}
+
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="list notifications required parameters", Context = Context)]
 pub struct ListNotificationParameters {
@@ -257,6 +272,44 @@ pub async fn listNotification_impl(context: &Context, para: ListNotificationPara
 			result_list.push(item);
 		};
 		Ok(ListNotificationGQLResult { notes: result_list, count: ret.count, count_all: ret.count_all, count_unread: ret.count_unread, page_count: ret.page_count })
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+pub async fn listUnreadNotificationCount_impl(context: &Context) -> FieldResult<ListUnreadNotificationCountGQLResult> {
+	let para = ListNotificationParameters {
+		offset: None,
+		limit: None,
+		list_all: None,
+		note_type: None,
+	};
+	let result = postJSON!(ListNotificationResult, format!("{}/notes/list_unread.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let ret = result.data.unwrap();
+		let mut result_list = Vec::new();
+		let mut countmap = HashMap::new();
+		for note in ret.notes {
+			if let Some(item) = countmap.get_mut(&note.type_) {
+				*item += 1;
+			} else {
+				countmap.insert(note.type_, 0i32);
+			}
+		};
+		for (k, v) in countmap.iter() {
+			result_list.push(ListUnreadNotificationCountGQLResultItem {
+				msgtype: k.clone(),
+				count: *v
+			});
+		}
+		Ok(ListUnreadNotificationCountGQLResult { list: result_list })
 	} else {
 		Err(
 			juniper::FieldError::new(

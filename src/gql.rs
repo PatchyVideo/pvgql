@@ -96,6 +96,9 @@ impl Query {
 	pub async fn listNotifications(context: &Context, para: ListNotificationParameters) -> FieldResult<notification::ListNotificationGQLResult> {
 		notification::listNotification_impl(context, para).await
 	}
+	pub async fn listUnreadNotificationsCount(context: &Context) -> FieldResult<notification::ListUnreadNotificationCountGQLResult> {
+		notification::listUnreadNotificationCount_impl(context).await
+	}
 	// ------------------------------------------------
 	//     comment
 	// ------------------------------------------------
