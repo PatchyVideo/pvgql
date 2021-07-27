@@ -300,7 +300,7 @@ pub async fn listUnreadNotificationCount_impl(context: &Context) -> FieldResult<
 			if let Some(item) = countmap.get_mut(&note.type_) {
 				*item += 1;
 			} else {
-				countmap.insert(note.type_, 0i32);
+				countmap.insert(note.type_, 1i32);
 			}
 		};
 		for (k, v) in countmap.iter() {
