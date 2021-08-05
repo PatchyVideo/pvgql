@@ -321,3 +321,24 @@ pub async fn listUnreadNotificationCount_impl(context: &Context) -> FieldResult<
 		)
 	}
 }
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
+#[graphql(description="mark notifications read parameters", Context = Context)]
+pub struct MarkNotificationsReadParameters {
+	/// Whether to mark all as read or not
+	pub mark_all: Option<bool>,
+	/// Specify a type of note to mark all as read, only applicable when `mark_all` is set
+	pub note_type: Option<String>,
+	/// List of note IDs to mark as read, if present then `mark_all` shall not be set
+	pub note_ids: Option<Vec<String>>
+}
+
+pub async fn markNotificationsRead_impl(context: &Context, para: MarkNotificationsReadParameters) -> FieldResult<EmptyJSON> {
+	let mark_all = para.mark_all.map_or(false, |f| f);
+	let result = if mark_all {
+		postJSON!(EmptyJSON, format!("{}/notes/mark_all_read.do", BACKEND_URL), para, context)
+	} else {
+		postJSON!(EmptyJSON, format!("{}/notes/mark_read.do", BACKEND_URL), para, context)
+	};
+	Ok(EmptyJSON::new())
+}

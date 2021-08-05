@@ -64,7 +64,7 @@ pub struct ListAllSubscriptionResult {
 }
 
 pub async fn listSubscriptions_impl(context: &Context) -> FieldResult<Vec<PVSubscription>> {
-	let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON {}, context);
+	let result = postJSON!(ListAllSubscriptionResult, format!("{}/subs/all.do", BACKEND_URL), EmptyJSON::new(), context);
 	if result.status == "SUCCEED" {
 		Ok(result.data.unwrap().subs)
 	} else {
