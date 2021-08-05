@@ -106,7 +106,7 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
 }
 
 pub async fn whoami_impl(context: &Context) -> FieldResult<String> {
-    let result = postJSON!(String, format!("{}/user/whoami", BACKEND_URL), EmptyJSON {}, context);
+    let result = postJSON!(String, format!("{}/user/whoami", BACKEND_URL), EmptyJSON::new(), context);
     if result.status == "SUCCEED" {
         let r = result.data.unwrap();
 		Ok(r)

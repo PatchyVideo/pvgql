@@ -50,7 +50,7 @@ impl Stats {
 
 
 pub async fn getStats_impl(context: &Context) -> FieldResult<Stats> {
-    let result = postJSON!(Stats, format!("{}/stats.do", BACKEND_URL), EmptyJSON {}, context);
+    let result = postJSON!(Stats, format!("{}/stats.do", BACKEND_URL), EmptyJSON::new(), context);
     
     let r = result.data.unwrap();
     Ok(r)

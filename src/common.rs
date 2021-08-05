@@ -27,9 +27,17 @@ macro_rules! postRawJSON {
 
 use serde_derive::{Serialize, Deserialize};
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, juniper::GraphQLObject)]
 pub struct EmptyJSON {
-
+	/// Always not present
+	pub empty: Option<i32>
+}
+impl EmptyJSON {
+	pub fn new() -> EmptyJSON {
+		EmptyJSON {
+			empty: None
+		}
+	}
 }
 
 #[cfg(debug_assertions)]
@@ -64,3 +72,28 @@ macro_rules! postJSON {
 	};
 }
 
+macro_rules! postJSON_empty {
+	($u:expr, $j:expr, $c:ident) => {
+		{
+			let client = reqwest::Client::new();
+			let response = match $c.session.as_ref() {
+				Some(sess) => client.post(&$u).header("cookie", format!("session={}", sess)).json(&$j).send().await?,
+				None => client.post(&$u).json(&$j).send().await?
+			};
+			if response.status().is_success() {
+				response.json().await?;
+				Ok(())
+			} else {
+				let e: Error = response.json().await?;
+				Err(
+					juniper::FieldError::new(
+						e.code,
+						graphql_value!({
+							e.aux
+						}),
+					)
+				)
+			}
+		}?
+	};
+}
