@@ -39,7 +39,7 @@ pub struct EditVideoTagsRespObject {
 #[graphql(description="SetVideoClearence required parameters", Context = Context)]
 pub struct SetVideoClearenceParameters {
 	/// Video ID
-	pub video_id: String,
+	pub vid: String,
 	/// Clearence, one of 0, 1, 2, 3, default is 0
 	pub clearence: Option<i32>
 }
