@@ -3,6 +3,8 @@
 
 extern crate juniper;
 
+use std::env;
+
 use actix_web::{App, Error, HttpMessage, HttpResponse, HttpServer, client::ClientBuilder, cookie, middleware, web};
 use context::Context;
 use juniper_actix::{
@@ -40,9 +42,8 @@ async fn graphql(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	//env::set_var("RUST_LOG", "info");
-	//env_logger::init();
-	println!("Listening on 127.0.0.1:5008");
+	env::set_var("RUST_LOG", "info");
+	env_logger::init();
 
 	let server = HttpServer::new(move || {
 		App::new()
