@@ -14,4 +14,4 @@ jobs:
 
     steps:
     - name: Notify CI server
-      run: "curl -X ${{ secrets.CI_URL }} -H 'Content-Type: application/json' -d '{\"name\": \"pvgql\", \"key\": \"${{ secrets.CI_KEY }}\"}'"
+      run: "curl -X POST ${{ secrets.CI_URL }} -H 'Content-Type: application/json' -d '{\"name\": \"pvgql\", \"key\": \"${{ secrets.CI_KEY }}\"}'"
