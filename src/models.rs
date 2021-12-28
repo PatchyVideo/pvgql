@@ -12,9 +12,6 @@ use crate::{context::Context, services::{authorDB::Author, comment::{self, Threa
 
 use crate::services::users::User;
 
-#[path="./custom_scalar.rs"]
-mod custom_scalar;
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Error {
 	pub code: String,
@@ -440,7 +437,7 @@ pub struct Video {
 	pub clearence: i32,
 	pub item: VideoItem,
 	pub meta: Meta,
-	pub tag_count: i32,
+	pub tag_count: Option<i32>,
 	pub tags: Vec<i64>,
 	pub tags_readable: Option<Vec<String>>,
 	pub tag_by_category: Option<Vec<TagCategoryItem>>,
@@ -464,8 +461,8 @@ impl Video {
 	pub fn meta(&self) -> &Meta {
 		&self.meta
 	}
-	pub fn tag_count(&self) -> &i32 {
-		&self.tag_count
+	pub fn tag_count(&self) -> i32 {
+		self.tag_count.unwrap_or_default()
 	}
 	pub fn tag_ids(&self) -> Vec<i32> {
 		self.tags.iter().filter(|&n| { *n < 2_147_483_647i64 }).map(|&n| n as i32).collect::<Vec<_>>()

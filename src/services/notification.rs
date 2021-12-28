@@ -342,3 +342,17 @@ pub async fn markNotificationsRead_impl(context: &Context, para: MarkNotificatio
 	};
 	Ok(EmptyJSON::new())
 }
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
+#[graphql(description="send DM parameters", Context = Context)]
+pub struct SendDmParameters {
+	/// Target user's uid
+	pub dst_user: String,
+	/// Content
+	pub content: String,
+}
+
+pub async fn sendDM_impl(context: &Context, para: SendDmParameters) -> FieldResult<EmptyJSON> {
+	postJSON!(EmptyJSON, format!("{}/notes/send_dm.do", BACKEND_URL), para, context);
+	Ok(EmptyJSON::new())
+}

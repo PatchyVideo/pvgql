@@ -6,7 +6,7 @@ use chrono::{DateTime, Utc};
 use notification::ListNotificationParameters;
 use pvsubscription::ListSubscriptionVideosParameters;
 use crate::common::EmptyJSON;
-use crate::services::notification::MarkNotificationsReadParameters;
+use crate::services::notification::{MarkNotificationsReadParameters, SendDmParameters};
 use crate::services::tags::{self, GetPopularTagsParameters, GetPopularTagsResult};
 use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, pvsubscription}};
 use crate::models::Error;
@@ -157,6 +157,9 @@ impl Mutation {
 	// ------------------------------------------------
 	pub async fn markAsRead(context: &Context, para: MarkNotificationsReadParameters) -> FieldResult<EmptyJSON> {
 		notification::markNotificationsRead_impl(context, para).await
+	}
+	pub async fn sendDM(context: &Context, para: SendDmParameters) -> FieldResult<EmptyJSON> {
+		notification::sendDM_impl(context, para).await
 	}
 }
 
