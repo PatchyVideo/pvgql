@@ -5,11 +5,7 @@ extern crate juniper;
 
 use std::env;
 
-<<<<<<< HEAD
 use actix_web::{App, Error, HttpMessage, HttpResponse, HttpServer, cookie, middleware, web};
-=======
-use actix_web::{App, Error, HttpMessage, HttpResponse, HttpServer, client::ClientBuilder, cookie, middleware, web};
->>>>>>> 7aa4a1eec4a5c7df65bd9c860a7605cc95f536d8
 use context::Context;
 use juniper_actix::{
 	graphiql_handler as gqli_handler, graphql_handler, playground_handler as play_handler,
