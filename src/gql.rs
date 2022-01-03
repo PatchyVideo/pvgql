@@ -149,6 +149,9 @@ impl Mutation {
 	pub async fn editVideoTags(context: &Context, para: editVideo::EditVideoTagsParameters) -> FieldResult<Vec<models::TagObjectValue>> {
 		editVideo::editVideoTags_impl(context, para).await
 	}
+	pub async fn editVideoTagIds(context: &Context, para: editVideo::EditVideoTagIdsParameters) -> FieldResult<Vec<models::TagObjectValue>> {
+		editVideo::editVideoTagIds_impl(context, para).await
+	}
 	pub async fn setVideoClearence(context: &Context, para: editVideo::SetVideoClearenceParameters) -> FieldResult<i32> {
 		editVideo::setVideoClearenceVideo_impl(context, para).await
 	}
