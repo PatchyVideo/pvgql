@@ -39,7 +39,7 @@ pub struct EditVideoTagIdsParameters {
 	pub tags: Vec<i32>,
 	/// One of 'replace', 'append', 'remove'
 	pub edit_behaviour: String,
-	/// Behaviour if a tag does not exist, one of 'ignore', 'error', 'append', default 'ignore'
+	/// Behaviour if a tag does not exist, one of 'ignore', 'error', default 'ignore'
 	pub not_found_behaviour: Option<String>,
 	/// User language used for adding tags, default is 'ENG'
 	pub user_language: Option<String>,
