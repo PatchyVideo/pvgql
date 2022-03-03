@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use notification::ListNotificationParameters;
 use pvsubscription::ListSubscriptionVideosParameters;
 use crate::common::EmptyJSON;
+use crate::services::comment::{PostCommentParameters, PostCommentResponse};
 use crate::services::notification::{MarkNotificationsReadParameters, SendDmParameters};
 use crate::services::tags::{self, GetPopularTagsParameters, GetPopularTagsResult};
 use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, pvsubscription}};
@@ -163,6 +164,27 @@ impl Mutation {
 	}
 	pub async fn sendDM(context: &Context, para: SendDmParameters) -> FieldResult<EmptyJSON> {
 		notification::sendDM_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     comment
+	// ------------------------------------------------
+	pub async fn postComment(context: &Context, para: comment::PostCommentParameters) -> FieldResult<PostCommentResponse> {
+		comment::postComment_impl(context, para).await
+	}
+	pub async fn postReply(context: &Context, para: comment::PostReplyParameters) -> FieldResult<bool> {
+		comment::postReply_impl(context, para).await
+	}
+	pub async fn editComment(context: &Context, para: comment::EditCommentParameters) -> FieldResult<bool> {
+		comment::editComment_impl(context, para).await
+	}
+	pub async fn hideComment(context: &Context, cid: String) -> FieldResult<bool> {
+		comment::editCommentOp_impl(context, comment::EditCommentOp::Hide, cid).await
+	}
+	pub async fn delComment(context: &Context, cid: String) -> FieldResult<bool> {
+		comment::editCommentOp_impl(context, comment::EditCommentOp::Del, cid).await
+	}
+	pub async fn pinComment(context: &Context, cid: String, pin: bool) -> FieldResult<bool> {
+		comment::editCommentOp_impl(context, comment::EditCommentOp::Pin(pin), cid).await
 	}
 }
 
