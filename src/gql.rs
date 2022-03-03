@@ -13,7 +13,7 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, pvs
 use crate::models::Error;
 use juniper::graphql_value;
 
-use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users, stats};
+use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users, stats, leaderboard};
 use crate::context::Context;
 
 pub struct Query;
@@ -119,6 +119,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getStats(context: &Context) -> FieldResult<stats::Stats> {
 		stats::getStats_impl(context).await
+	}
+	// ------------------------------------------------
+	//     leaderboard
+	// ------------------------------------------------
+	pub async fn getLeaderboard(context: &Context, hrs: i32, k: i32) -> FieldResult<leaderboard::LeaderboardResult> {
+		leaderboard::getLeaderboard_impl(context, hrs, k).await
 	}
 }
 
