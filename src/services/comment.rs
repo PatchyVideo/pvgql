@@ -225,7 +225,7 @@ pub async fn postComment_impl(context: &Context, para: PostCommentParameters) ->
 			if para.filter {
 				postJSON!(PostCommentResponse, format!("{}/comments/add_to_video.do", BACKEND_URL), req, context)
 			} else {
-				postJSON!(PostCommentResponse, format!("{}/comments/add_to_video_unfiltered.doo", BACKEND_URL), req, context)
+				postJSON!(PostCommentResponse, format!("{}/comments/add_to_video_unfiltered.do", BACKEND_URL), req, context)
 			}
 		},
 		CommentType::Playlist => {
