@@ -24,7 +24,7 @@ pub struct User {
 	pub image: String,
 	pub email: Option<String>,
 	pub gravatar: Option<String>,
-	pub linked_tag: Option<i32>,
+	pub linked_tagid: Option<i32>,
 	pub meta: Meta
 }
 
@@ -55,8 +55,8 @@ impl User {
 	pub fn meta(&self) -> &Meta {
 		&self.meta
 	}
-	pub async fn linked_tag_object(&self, context: &Context) -> FieldResult<Option<TagObjectValue>> {
-		Ok(match self.linked_tag {
+	pub async fn linked_tagid_object(&self, context: &Context) -> FieldResult<Option<TagObjectValue>> {
+		Ok(match self.linked_tagid {
 			Some(tag_id) => {
 				let mut ret = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
 					tagid: vec![tag_id]
@@ -93,7 +93,7 @@ pub struct UserProfile {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetProfileResult {
     pub profile: UserProfile,
-	pub linked_tag: Option<i32>,
+	pub linked_tagid: Option<i32>,
     pub _id: ObjectId,
     pub meta: Meta,
 }
@@ -111,7 +111,7 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
             image: r.profile.image,
             meta: r.meta,
 			gravatar: r.profile.gravatar,
-			linked_tag: r.linked_tag
+			linked_tagid: r.linked_tagid
         })
 	} else {
 		Err(
