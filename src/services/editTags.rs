@@ -147,9 +147,9 @@ pub struct ListTagParameters {
 	pub query: Option<String>,
 	/// Use regex for query if exists and true, otherwise wildcard query will be used
 	pub query_regex: Option<bool>,
-    /// Category
-    pub category: Option<String>,
-    /// Order, one of 'latest', 'oldest', 'count', 'count_inv'
+	/// Category
+	pub category: Option<String>,
+	/// Order, one of 'latest', 'oldest', 'count', 'count_inv'
 	pub order: Option<String>,
 	pub offset: Option<i32>,
 	pub limit: Option<i32>
@@ -229,14 +229,14 @@ pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldR
 		}
 	};
 	if result_opt.is_none() {
-        return Err(
-            juniper::FieldError::new(
-                "INCORRECT_REQUEST",
-                graphql_value!({
-                    "At least one of query or category must be set"
-                }),
-            )
-        );
+		return Err(
+			juniper::FieldError::new(
+				"INCORRECT_REQUEST",
+				graphql_value!({
+					"At least one of query or category must be set"
+				}),
+			)
+		);
 	};
 	let result = result_opt.unwrap();
 	if result.status == "SUCCEED" {

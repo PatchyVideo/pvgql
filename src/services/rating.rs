@@ -41,9 +41,9 @@ impl Rating {
 #[graphql(description="required parameters for get user", Context = Context)]
 pub struct GetRatingParameters {
 	/// ID of playlist
-    pub pid: Option<String>,
+	pub pid: Option<String>,
 	/// ID of video
-    pub vid: Option<String>
+	pub vid: Option<String>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -54,34 +54,34 @@ pub struct GetRatingResult {
 }
 
 pub async fn getRating_impl(context: &Context, para: GetRatingParameters) -> FieldResult<Option<Rating>> { // TODO: user session ID
-    let mut result_opt = None;
-    
-    if para.pid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_playlist_total.do", BACKEND_URL), para, context));
-    };
-    if para.vid.is_some() {
-        result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_video_total.do", BACKEND_URL), para, context));
-    }
-    if result_opt.is_none() {
-        return Err(
-            juniper::FieldError::new(
-                "INCORRECT_REQUEST",
-                graphql_value!({
-                    "At least one of pid or vid must be set"
-                }),
-            )
-        );
-    }
+	let mut result_opt = None;
+	
+	if para.pid.is_some() {
+		result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_playlist_total.do", BACKEND_URL), para, context));
+	};
+	if para.vid.is_some() {
+		result_opt = Some(postJSON!(GetRatingResult, format!("{}/rating/get_video_total.do", BACKEND_URL), para, context));
+	}
+	if result_opt.is_none() {
+		return Err(
+			juniper::FieldError::new(
+				"INCORRECT_REQUEST",
+				graphql_value!({
+					"At least one of pid or vid must be set"
+				}),
+			)
+		);
+	}
 
-    let result = result_opt.unwrap();
-    
-    if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+	let result = result_opt.unwrap();
+	
+	if result.status == "SUCCEED" {
+		let r = result.data.unwrap();
 		Ok(Some(Rating {
-            user_rating: r.user_rating,
-            total_rating: r.total_rating,
-            total_user: r.total_user
-        }))
+			user_rating: r.user_rating,
+			total_rating: r.total_rating,
+			total_user: r.total_user
+		}))
 	} else {
 		Ok(None)
 	}

@@ -63,10 +63,10 @@ pub struct BatchPostVideoResult {
 pub async fn postVideo_impl(context: &Context, para: PostVideoRequestData) -> FieldResult<PostVideoResult> {
 	let result = postJSON!(PostVideoResult, format!("{}/postvideo.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+		let r = result.data.unwrap();
 		Ok(r)
 	} else {
-        let r = result.dataerr.unwrap();
+		let r = result.dataerr.unwrap();
 		Err(
 			juniper::FieldError::new(
 				r.reason,
@@ -81,10 +81,10 @@ pub async fn postVideo_impl(context: &Context, para: PostVideoRequestData) -> Fi
 pub async fn batchPostVideo_impl(context: &Context, para: BatchPostVideoRequestData) -> FieldResult<BatchPostVideoResult> {
 	let result = postJSON!(BatchPostVideoResult, format!("{}/postvideo_batch.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+		let r = result.data.unwrap();
 		Ok(r)
 	} else {
-        let r = result.dataerr.unwrap();
+		let r = result.dataerr.unwrap();
 		Err(
 			juniper::FieldError::new(
 				r.reason,

@@ -136,7 +136,7 @@ impl Thread {
 #[graphql(description="required parameters for viewing a thread", Context = Context)]
 pub struct GetThreadParameters {
 	/// ID of thread
-    pub thread_id: String
+	pub thread_id: String
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -175,7 +175,7 @@ pub struct PostCommentParameters {
 	/// Target vid, pid or comment_id (ObjectId)
 	pub target_id: String,
 	/// Type of comment
-    pub comment_type: CommentType,
+	pub comment_type: CommentType,
 	/// To filter or not
 	pub filter: bool,
 	/// Content

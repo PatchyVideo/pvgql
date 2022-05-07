@@ -16,8 +16,8 @@ use crate::context::Context;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct StatsTags {
-    pub id: i32,
-    pub count: i32
+	pub id: i32,
+	pub count: i32
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -36,22 +36,22 @@ impl Stats {
 	// Top 20 tags
 	pub async fn top_tags(&self, context: &Context) -> FieldResult<Option<Vec<TagWithPopularity>>> {
 		let tagids = self.top_tags.iter().map(|k| k.id).collect::<Vec<_>>();
-        let mut tagobjs: Vec<TagObjectValue> = super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
-            tagid: tagids
-        }).await?;
-        Ok(Some(self.top_tags.iter().zip(tagobjs.iter_mut()).map(|(k, v)| {
-            TagWithPopularity {
-                popluarity: k.count as _,
-                tag: v.clone()
-            }
-        }).collect::<Vec<_>>()))
+		let mut tagobjs: Vec<TagObjectValue> = super::editTags::getTagObjectsBatch_impl(context, super::editTags::GetTagObjectsBatchParameters {
+			tagid: tagids
+		}).await?;
+		Ok(Some(self.top_tags.iter().zip(tagobjs.iter_mut()).map(|(k, v)| {
+			TagWithPopularity {
+				popluarity: k.count as _,
+				tag: v.clone()
+			}
+		}).collect::<Vec<_>>()))
 	}
 }
 
 
 pub async fn getStats_impl(context: &Context) -> FieldResult<Stats> {
-    let result = postJSON!(Stats, format!("{}/stats.do", BACKEND_URL), EmptyJSON::new(), context);
-    
-    let r = result.data.unwrap();
-    Ok(r)
+	let result = postJSON!(Stats, format!("{}/stats.do", BACKEND_URL), EmptyJSON::new(), context);
+	
+	let r = result.data.unwrap();
+	Ok(r)
 }

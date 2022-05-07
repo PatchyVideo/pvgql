@@ -37,9 +37,9 @@ impl Author {
 		self._id.clone()
 	}
 	#[graphql(
-        // overwrite the public name
-        name = "type"
-    )]
+		// overwrite the public name
+		name = "type"
+	)]
 	pub async fn type_(&self) -> &String {
 		&self.type_
 	}
@@ -78,12 +78,12 @@ impl Author {
 #[graphql(description="getTagsBatch required parameters", Context = Context)]
 pub struct GetAuthorParameters {
 	/// Tag ID
-    pub tagid: i32
+	pub tagid: i32
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetAuthorResp {
-    pub record: Author
+	pub record: Author
 }
 
 pub async fn getAuthor_impl(context: &Context, para: GetAuthorParameters) -> FieldResult<Author> {
@@ -106,7 +106,7 @@ pub async fn getAuthor_impl(context: &Context, para: GetAuthorParameters) -> Fie
 #[graphql(description="getTagsBatch required parameters", Context = Context)]
 pub struct PvUserAssociationParameters {
 	/// Tag ID
-    pub tagid: i32,
+	pub tagid: i32,
 	/// PatchyVideo User ID
 	pub uid: String
 }

@@ -17,39 +17,39 @@ use crate::context::Context;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ResultantPlaylist {
 	pub _id: ObjectId,
-    pub item: PlaylistMeta,
-    pub meta: Meta,
-    pub tag_count: i32,
-    pub tags: Vec<i64>,
+	pub item: PlaylistMeta,
+	pub meta: Meta,
+	pub tag_count: i32,
+	pub tags: Vec<i64>,
 	pub clearence: i32,
 	pub comment_thread: Option<ObjectId>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetPlaylistMetadataResult {
-    pub editable: bool,
-    pub owner: bool,
-    pub playlist: ResultantPlaylist,
-    pub tags: Vec<serde_json::Value>
+	pub editable: bool,
+	pub owner: bool,
+	pub playlist: ResultantPlaylist,
+	pub tags: Vec<serde_json::Value>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetPlaylistContentResult {
-    pub videos: Vec<Video>
+	pub videos: Vec<Video>
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="required parameters for get playlist", Context = Context)]
 pub struct GetPlaylistParameters {
 	/// ID of playlist
-    pub pid: String
+	pub pid: String
 }
 
 #[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize)]
 #[graphql(description="required parameters for get playlist content", Context = Context)]
 pub struct GetPlaylistContentParameters {
-    /// ID of playlist
-    pub pid: String,
+	/// ID of playlist
+	pub pid: String,
 	/// Offset (start from 0)
 	pub offset: Option<i32>,
 	/// Num of item in a page
@@ -58,16 +58,16 @@ pub struct GetPlaylistContentParameters {
 
 /// Only loads metadata
 pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) -> FieldResult<Playlist> {
-    let result = postJSON!(GetPlaylistMetadataResult, format!("{}/lists/get_playlist_metadata.do", BACKEND_URL), para, context);
-    if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
-        let tag_by_cat = r.tags[2].as_object().ok_or(juniper::FieldError::new(
-            "NO_CATEGORY_TAG_MAP",
-            graphql_value!({
-                "INTERAL_ERROR": "NO_CATEGORY_TAG_MAP"
-            }),
-        ))?;
-        let mut catemap: Vec<TagCategoryItem> = vec![];
+	let result = postJSON!(GetPlaylistMetadataResult, format!("{}/lists/get_playlist_metadata.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let r = result.data.unwrap();
+		let tag_by_cat = r.tags[2].as_object().ok_or(juniper::FieldError::new(
+			"NO_CATEGORY_TAG_MAP",
+			graphql_value!({
+				"INTERAL_ERROR": "NO_CATEGORY_TAG_MAP"
+			}),
+		))?;
+		let mut catemap: Vec<TagCategoryItem> = vec![];
 		for (k, v) in tag_by_cat {
 			catemap.push(TagCategoryItem {
 				key: TagCategoryEnum::from_string(&k)?,
@@ -75,16 +75,16 @@ pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) ->
 			});
 		};
 		Ok(Playlist {
-            _id: r.playlist._id,
-            item: r.playlist.item,
-            meta: r.playlist.meta,
-            clearence: r.playlist.clearence,
-            editable: Some(r.editable),
-            owner: Some(r.owner),
-            tags: r.playlist.tags,
-            tag_by_category: Some(catemap),
+			_id: r.playlist._id,
+			item: r.playlist.item,
+			meta: r.playlist.meta,
+			clearence: r.playlist.clearence,
+			editable: Some(r.editable),
+			owner: Some(r.owner),
+			tags: r.playlist.tags,
+			tag_by_category: Some(catemap),
 			comment_thread: r.playlist.comment_thread
-        })
+		})
 	} else {
 		Err(
 			juniper::FieldError::new(
@@ -98,9 +98,9 @@ pub async fn getPlaylist_impl(context: &Context, para: GetPlaylistParameters) ->
 }
 
 pub async fn getPlaylistContent_impl(context: &Context, para: GetPlaylistContentParameters) -> FieldResult<Vec<Video>> {
-    let result = postJSON!(GetPlaylistContentResult, format!("{}/lists/get_playlist.do", BACKEND_URL), para, context);
-    if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+	let result = postJSON!(GetPlaylistContentResult, format!("{}/lists/get_playlist.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let r = result.data.unwrap();
 		Ok(r.videos)
 	} else {
 		Err(
@@ -141,16 +141,16 @@ pub struct ListPlaylistResult {
 impl ListPlaylistResult {
 	pub fn playlists(&self) -> Vec<Playlist> {
 		self.playlists.iter().map(|r| Playlist {
-            _id: r._id.clone(),
-            item: r.item.clone(),
-            meta: r.meta.clone(),
-            clearence: r.clearence,
-            editable: None,
-            owner: None,
-            tags: r.tags.clone(),
-            tag_by_category: None,
+			_id: r._id.clone(),
+			item: r.item.clone(),
+			meta: r.meta.clone(),
+			clearence: r.clearence,
+			editable: None,
+			owner: None,
+			tags: r.tags.clone(),
+			tag_by_category: None,
 			comment_thread: r.comment_thread.clone()
-        }).collect::<Vec<_>>()
+		}).collect::<Vec<_>>()
 	}
 	pub fn count(&self) -> &i32 {
 		&self.count

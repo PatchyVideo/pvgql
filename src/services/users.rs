@@ -77,7 +77,7 @@ impl User {
 #[graphql(description="required parameters for get user", Context = Context)]
 pub struct GetUserParameters {
 	/// ID of user
-    pub uid: String
+	pub uid: String
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -92,27 +92,27 @@ pub struct UserProfile {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetProfileResult {
-    pub profile: UserProfile,
+	pub profile: UserProfile,
 	pub linked_tagid: Option<i32>,
-    pub _id: ObjectId,
-    pub meta: Meta,
+	pub _id: ObjectId,
+	pub meta: Meta,
 }
 
 pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldResult<User> {
-    let result = postJSON!(GetProfileResult, format!("{}/user/profile.do", BACKEND_URL), para, context);
-    if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+	let result = postJSON!(GetProfileResult, format!("{}/user/profile.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		let r = result.data.unwrap();
 		Ok(User {
-            _id: r._id,
-            bind_qq: r.profile.bind_qq,
-            desc: r.profile.desc,
-            username: r.profile.username,
-            email: r.profile.email,
-            image: r.profile.image,
-            meta: r.meta,
+			_id: r._id,
+			bind_qq: r.profile.bind_qq,
+			desc: r.profile.desc,
+			username: r.profile.username,
+			email: r.profile.email,
+			image: r.profile.image,
+			meta: r.meta,
 			gravatar: r.profile.gravatar,
 			linked_tagid: r.linked_tagid
-        })
+		})
 	} else {
 		Err(
 			juniper::FieldError::new(
@@ -126,9 +126,9 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
 }
 
 pub async fn whoami_impl(context: &Context) -> FieldResult<String> {
-    let result = postJSON!(String, format!("{}/user/whoami", BACKEND_URL), EmptyJSON::new(), context);
-    if result.status == "SUCCEED" {
-        let r = result.data.unwrap();
+	let result = postJSON!(String, format!("{}/user/whoami", BACKEND_URL), EmptyJSON::new(), context);
+	if result.status == "SUCCEED" {
+		let r = result.data.unwrap();
 		Ok(r)
 	} else {
 		Ok("NOT_LOGGED_IN".to_string())

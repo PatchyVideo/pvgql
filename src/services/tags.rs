@@ -17,9 +17,9 @@ use crate::context::Context;
 #[graphql(description="GetPopularTags parameters", Context = Context)]
 pub struct GetPopularTagsParameters {
 	/// Language, default 'ENG'
-    pub lang: Option<String>,
-    // How many tags, default 20
-    pub count: Option<i32>
+	pub lang: Option<String>,
+	// How many tags, default 20
+	pub count: Option<i32>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
