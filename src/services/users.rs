@@ -4,6 +4,8 @@ use juniper::graphql_value;
 
 use juniper::FieldResult;
 
+use crate::models::TagObjectValue;
+use crate::services::editTags;
 use crate::{common::*};
 
 use chrono::{DateTime, Utc};
@@ -22,6 +24,7 @@ pub struct User {
 	pub image: String,
 	pub email: Option<String>,
 	pub gravatar: Option<String>,
+	pub linked_tag: Option<i32>,
 	pub meta: Meta
 }
 
@@ -52,6 +55,21 @@ impl User {
 	pub fn meta(&self) -> &Meta {
 		&self.meta
 	}
+	pub async fn linked_tag_object(&self, context: &Context) -> FieldResult<Option<TagObjectValue>> {
+		Ok(match self.linked_tag {
+			Some(tag_id) => {
+				let mut ret = editTags::getTagObjectsBatch_impl(context, editTags::GetTagObjectsBatchParameters {
+					tagid: vec![tag_id]
+				}).await?;
+				if ret.len() == 1 {
+					Some(ret.pop().unwrap())
+				} else {
+					None
+				}
+			},
+			None => None,
+		})
+	}
 }
 
 
@@ -69,12 +87,13 @@ pub struct UserProfile {
 	pub username: String,
 	pub image: String,
 	pub email: Option<String>,
-	pub gravatar: Option<String>,
+	pub gravatar: Option<String>
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct GetProfileResult {
     pub profile: UserProfile,
+	pub linked_tag: Option<i32>,
     pub _id: ObjectId,
     pub meta: Meta,
 }
@@ -91,7 +110,8 @@ pub async fn getUser_impl(context: &Context, para: GetUserParameters) -> FieldRe
             email: r.profile.email,
             image: r.profile.image,
             meta: r.meta,
-			gravatar: r.profile.gravatar
+			gravatar: r.profile.gravatar,
+			linked_tag: r.linked_tag
         })
 	} else {
 		Err(

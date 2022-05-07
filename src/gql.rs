@@ -192,6 +192,15 @@ impl Mutation {
 	pub async fn pinComment(context: &Context, cid: String, pin: bool) -> FieldResult<bool> {
 		comment::editCommentOp_impl(context, comment::EditCommentOp::Pin(pin), cid).await
 	}
+	// ------------------------------------------------
+	//     authorDB
+	// ------------------------------------------------
+	pub async fn associateWithPvUser(context: &Context, para: authorDB::PvUserAssociationParameters) -> FieldResult<bool> {
+		authorDB::associateWithPvUser_impl(context, para).await
+	}
+	pub async fn disassociateWithPvUser(context: &Context, para: authorDB::PvUserAssociationParameters) -> FieldResult<bool> {
+		authorDB::disassociateWithPvUser_impl(context, para).await
+	}
 }
 
 pub struct Subscription;
