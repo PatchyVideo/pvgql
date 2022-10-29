@@ -34,8 +34,18 @@ async fn graphql(
 	schema: web::Data<Schema>,
 ) -> Result<HttpResponse, Error> {
 	let session = req.cookie("session").map(|f| f.value().to_string());
+	let auth_header = if let Some(v) = req.headers().get("Authorization") {
+		if let Ok(v2) = v.to_str() {
+			Some(v2.to_string())
+		} else {
+			None
+		}
+	} else {
+		None
+	};
 	let ctx = Context {
-		session: session
+		session,
+		auth_header
 	};
 	graphql_handler(&schema, &ctx, req, payload).await
 }

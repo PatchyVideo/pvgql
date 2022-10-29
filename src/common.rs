@@ -50,10 +50,16 @@ macro_rules! postJSON {
 	($t:ident, $u:expr, $j:expr, $c:ident) => {
 		{
 			let client = reqwest::Client::new();
-			let response = match $c.session.as_ref() {
-				Some(sess) => client.post(&$u).header("cookie", format!("session={}", sess)).json(&$j).send().await?,
-				None => client.post(&$u).json(&$j).send().await?
+			let client = client.post(&$u);
+			let client = match $c.session.as_ref() {
+				Some(sess) => client.header("cookie", format!("session={}", sess)),
+				None => client
 			};
+			let client = match $c.auth_header.as_ref() {
+				Some(auth) => client.header("Authorization", auth),
+				None => client
+			};
+			let response = client.json(&$j).send().await?;
 			if response.status().is_success() {
 				let obj : RestResult::<$t> = response.json().await?;
 				Ok(obj)
