@@ -12,6 +12,7 @@ pub mod stats;
 pub mod notification;
 pub mod comment;
 pub mod leaderboard;
+pub mod tagHistory;
 
 pub mod postvideo;
 pub mod editVideo;

@@ -242,15 +242,15 @@ pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldR
 	if result.status == "SUCCEED" {
 		let ret = result.data.unwrap();
 		Ok(ListTagsResult {
-			tags: ret.tags.iter().map(|tagobj| {
+			tags: ret.tags.into_iter().map(|tagobj| {
 					RegularTagObject {
 						tagid: tagobj.id,
-						_id: tagobj._id.clone(),
-						alias: tagobj.alias.clone(),
-						category: tagobj.category.clone(),
+						_id: tagobj._id,
+						alias: tagobj.alias,
+						category: tagobj.category,
 						languages: {
 							let mut langmap: Vec<MultilingualMapping> = vec![];
-							for (k, v) in tagobj.languages.clone() {
+							for (k, v) in tagobj.languages {
 								langmap.push(MultilingualMapping {
 									lang: k,
 									value: v.as_str().unwrap().to_string()
@@ -260,7 +260,7 @@ pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldR
 						},
 						count: tagobj.count as i32,
 						is_author: false,
-						meta: tagobj.meta.clone()
+						meta: tagobj.meta
 					}
 				}).collect::<Vec<_>>(),
 			page_count: ret.page_count,

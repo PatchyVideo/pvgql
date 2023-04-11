@@ -67,7 +67,7 @@ pub async fn getLeaderboard_impl(context: &Context, hrs: i32, k: i32) -> FieldRe
 	if result.status == "SUCCEED" {
 		let result = result.data.unwrap();
 		let items = result
-			.iter()
+			.into_iter()
 			.map(|o| LeaderboardResultItem { user_id: o._id.to_string(), count: o.count })
 			.collect::<Vec<_>>();
 		Ok(LeaderboardResult {

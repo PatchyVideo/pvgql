@@ -13,7 +13,7 @@ use crate::{models, services::{comment::{self, GetThreadParameters, Thread}, pvs
 use crate::models::Error;
 use juniper::graphql_value;
 
-use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users, stats, leaderboard};
+use crate::services::{authorDB, editTags, editVideo, getVideo, listVideo, notification, playlist, postvideo, rating, users, stats, leaderboard, tagHistory};
 use crate::context::Context;
 
 pub struct Query;
@@ -125,6 +125,12 @@ impl Query {
 	// ------------------------------------------------
 	pub async fn getLeaderboard(context: &Context, hrs: i32, k: i32) -> FieldResult<leaderboard::LeaderboardResult> {
 		leaderboard::getLeaderboard_impl(context, hrs, k).await
+	}
+	// ------------------------------------------------
+	//     tagHistory
+	// ------------------------------------------------
+	pub async fn getRawTagHistory(context: &Context, offset: i32, limit: i32) -> FieldResult<tagHistory::RawTagHistoryResult> {
+		tagHistory::getRawTagHistory_impl(context, offset, limit).await
 	}
 }
 
