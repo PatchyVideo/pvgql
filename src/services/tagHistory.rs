@@ -91,11 +91,11 @@ pub async fn getRawTagHistory_impl(context: &Context, offset: i32, limit: i32) -
         .items
 			.into_iter()
 			.map(|o| RawTagHistoryItem {
-                add_tag_ids: o.add_tag_ids, 
-                del_tag_ids: o.del_tag_ids, 
-                user_id: o.user_id, 
-                video_obj: o.video_obj, 
-                time: o.time 
+                add_tag_ids: o.add_tag_ids,
+                del_tag_ids: o.del_tag_ids,
+                user_id: o.user_id,
+                video_obj: o.video_obj,
+                time: o.time
             })
 			.collect::<Vec<_>>();
 		Ok(RawTagHistoryResult {
