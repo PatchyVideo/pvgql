@@ -213,6 +213,30 @@ impl Mutation {
 	pub async fn addTag(context: &Context, para: editTags::AddTagParameters) -> FieldResult<bool> {
 		editTags::addTag_impl(context, para).await
 	}
+	pub async fn removeTag(context: &Context, para: editTags::RemoveTagParameters) -> FieldResult<bool> {
+		editTags::removeTag_impl(context, para).await
+	}
+	pub async fn renameTag(context: &Context, para: editTags::RenameTagParameters) -> FieldResult<bool> {
+		editTags::renameTag_impl(context, para).await
+	}
+	pub async fn addAlias(context: &Context, para: editTags::AddAliasParameters) -> FieldResult<bool> {
+		editTags::addAlias_impl(context, para).await
+	}
+	pub async fn removeAlias(context: &Context, para: editTags::RemoveAliasParameters) -> FieldResult<bool> {
+		editTags::removeAlias_impl(context, para).await
+	}
+	pub async fn renameAlias(context: &Context, para: editTags::RenameAliasParameters) -> FieldResult<bool> {
+		editTags::renameAlias_impl(context, para).await
+	}
+	pub async fn transferCategory(context: &Context, para: editTags::TransferCategoryParameters) -> FieldResult<bool> {
+		editTags::transferCategory_impl(context, para).await
+	}
+	pub async fn addTagLanguage(context: &Context, para: editTags::AddTagLanguageParameters) -> FieldResult<bool> {
+		editTags::addTagLanguage_impl(context, para).await
+	}
+	pub async fn mergeTag(context: &Context, para: editTags::MergeTagParameters) -> FieldResult<bool> {
+		editTags::mergeTag_impl(context, para).await
+	}
 }
 
 pub struct Subscription;

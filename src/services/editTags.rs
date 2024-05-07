@@ -307,3 +307,203 @@ pub async fn addTag_impl(context: &Context, para: AddTagParameters) -> FieldResu
 	}
 }
 
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for removing a tag", Context = Context)]
+pub struct RemoveTagParameters {
+	/// Tag
+	pub tag: String,
+}
+
+pub async fn removeTag_impl(context: &Context, para: RemoveTagParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/remove_tag.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for transfer tag category", Context = Context)]
+pub struct TransferCategoryParameters {
+	/// Tag
+	pub tag: String,
+	/// Category
+	pub category: String,
+}
+
+pub async fn transferCategory_impl(context: &Context, para: TransferCategoryParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/transfer_category.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for renaming a tag", Context = Context)]
+pub struct RenameTagParameters {
+	/// Tag
+	pub tag: String,
+	/// New Tag
+	pub new_tag: String,
+	/// Language
+	pub language: String,
+}
+
+pub async fn renameTag_impl(context: &Context, para: RenameTagParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/rename_tag.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for renaming an alias", Context = Context)]
+pub struct RenameAliasParameters {
+	/// Tag
+	pub tag: String,
+	/// New Tag
+	pub new_tag: String,
+}
+
+pub async fn renameAlias_impl(context: &Context, para: RenameAliasParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/rename_alias.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for adding an alias", Context = Context)]
+pub struct AddAliasParameters {
+	/// Tag
+	pub tag: String,
+	/// New Tag
+	pub new_tag: String,
+}
+
+pub async fn addAlias_impl(context: &Context, para: AddAliasParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/add_alias.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for adding a tag language", Context = Context)]
+pub struct AddTagLanguageParameters {
+	/// Tag
+	pub tag: String,
+	/// New Tag
+	pub new_tag: String,
+	/// Language
+	pub language: String,
+}
+
+pub async fn addTagLanguage_impl(context: &Context, para: AddTagLanguageParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/add_tag_language.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for removing an alias", Context = Context)]
+pub struct RemoveAliasParameters {
+	/// Alias
+	pub alias: String,
+}
+
+pub async fn removeAlias_impl(context: &Context, para: RemoveAliasParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/remove_alias.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for merging tags", Context = Context)]
+pub struct MergeTagParameters {
+	/// Tag dst
+	pub tag_dst: String,
+	/// Tag src
+	pub tag_src: String,
+}
+
+pub async fn mergeTag_impl(context: &Context, para: MergeTagParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/merge_tag.do", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
