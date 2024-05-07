@@ -279,3 +279,31 @@ pub async fn listTags_impl(context: &Context, para: ListTagParameters) -> FieldR
 	}
 }
 
+
+#[derive(juniper::GraphQLInputObject, Clone, Serialize, Deserialize, Debug)]
+#[graphql(description="required parameters for adding a tag", Context = Context)]
+pub struct AddTagParameters {
+	/// Tag
+	pub tag: String,
+	/// Category
+	pub category: String,
+	/// Language
+	pub language: String,
+}
+
+pub async fn addTag_impl(context: &Context, para: AddTagParameters) -> FieldResult<bool> {
+	let result = postJSON!(EmptyJSON, format!("{}/tags/add_tag.do'", BACKEND_URL), para, context);
+	if result.status == "SUCCEED" {
+		Ok(true)
+	} else {
+		Err(
+			juniper::FieldError::new(
+				result.status,
+				graphql_value!({
+					"aa"
+				}),
+			)
+		)
+	}
+}
+

@@ -61,7 +61,7 @@ impl Query {
 		playlist::getPlaylist_impl(context, para).await
 	}
 	pub async fn listPlaylist(context: &Context, para: playlist::ListPlaylistParameters) -> FieldResult<playlist::ListPlaylistResult> {
-		playlist::listPlatylist_impl(context, para).await
+		playlist::listPlaylist_impl(context, para).await
 	}
 	pub async fn listAdjacentVideos(context: &Context, para: playlist::ListAdjacentVideosParameters) -> FieldResult<Vec<models::VideoRank>> {
 		playlist::listAdjacentVideos_impl(context, para).await
@@ -206,6 +206,12 @@ impl Mutation {
 	}
 	pub async fn disassociateWithPvUser(context: &Context, para: authorDB::PvUserAssociationParameters) -> FieldResult<bool> {
 		authorDB::disassociateWithPvUser_impl(context, para).await
+	}
+	// ------------------------------------------------
+	//     editTags
+	// ------------------------------------------------
+	pub async fn addTag(context: &Context, para: editTags::AddTagParameters) -> FieldResult<bool> {
+		editTags::addTag_impl(context, para).await
 	}
 }
 

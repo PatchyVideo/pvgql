@@ -160,7 +160,7 @@ impl ListPlaylistResult {
 	}
 }
 
-pub async fn listPlatylist_impl(context: &Context, para: ListPlaylistParameters) -> FieldResult<ListPlaylistResult> {
+pub async fn listPlaylist_impl(context: &Context, para: ListPlaylistParameters) -> FieldResult<ListPlaylistResult> {
 	let result = if para.query.is_none() {
 		postJSON!(ListPlaylistResult, format!("{}/lists/all.do", BACKEND_URL), para, context)
 	} else {
