@@ -61,8 +61,22 @@ macro_rules! postJSON {
 			};
 			let response = client.json(&$j).send().await?;
 			if response.status().is_success() {
-				let obj : RestResult::<$t> = response.json().await?;
-				Ok(obj)
+				let result_text = response.text().await?;
+				let obj_try = serde_json::from_str::<RestResult::<$t>>(&result_text);
+				if let Ok(obj) = obj_try {
+					Ok(obj)
+				} else {
+					let decoded = serde_json::from_str::<RestResult::<String>>(&result_text)?;
+					let reason = decoded.dataerr.map_or("UNKNOWN".to_owned(), |f| f.reason);
+					Err(
+						juniper::FieldError::new(
+							decoded.status,
+							graphql_value!({
+								reason
+							}),
+						)
+					)
+				}
 			} else {
 				let e: Error = response.json().await?;
 				Err(
