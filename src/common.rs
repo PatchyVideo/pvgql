@@ -27,7 +27,7 @@ macro_rules! postRawJSON {
 
 use serde_derive::{Serialize, Deserialize};
 
-#[derive(Clone, Serialize, Deserialize, juniper::GraphQLObject)]
+#[derive(Debug, Clone, Serialize, Deserialize, juniper::GraphQLObject)]
 pub struct EmptyJSON {
 	/// Always not present
 	pub empty: Option<i32>

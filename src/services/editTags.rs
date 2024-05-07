@@ -292,7 +292,7 @@ pub struct AddTagParameters {
 }
 
 pub async fn addTag_impl(context: &Context, para: AddTagParameters) -> FieldResult<bool> {
-	let result = postJSON!(EmptyJSON, format!("{}/tags/add_tag.do'", BACKEND_URL), para, context);
+	let result = postJSON!(EmptyJSON, format!("{}/tags/add_tag.do", BACKEND_URL), para, context);
 	if result.status == "SUCCEED" {
 		Ok(true)
 	} else {
